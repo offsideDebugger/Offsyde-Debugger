@@ -26,18 +26,27 @@ export async function POST(request: NextRequest) {
             
             await page.goto(url, { 
                 waitUntil: 'networkidle',
-                timeout: 30000 
+                timeout: 50000 
             });
             
             const loadTime = Date.now() - startTime;
             
             // Get basic page info
             const title = await page.title();
+            const consoleErrors:string[]=[];
+            page.on('console', msg => {
+                if (msg.type() === 'error')
+                    consoleErrors.push(msg.text());
+            });
+            const failedRequests:string[]=[];
+            page.on("response", response => {
+                if (!response.ok())
+                    failedRequests.push(`${response.url()} - ${response.status()}`);
+            });
             
             // Measure performance metrics using browser APIs
             const metrics = await page.evaluate(() => {
                 const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-                
                 return {
                     domContentLoaded: Math.round(navigation.domContentLoadedEventEnd - navigation.fetchStart),
                     pageLoadComplete: Math.round(navigation.loadEventEnd - navigation.fetchStart),
@@ -69,7 +78,9 @@ export async function POST(request: NextRequest) {
                     performance: {
                         grade: loadTime < 2000 ? 'Excellent' : loadTime < 4000 ? 'Good' : loadTime < 6000 ? 'Fair' : 'Poor',
                         color: loadTime < 2000 ? 'green' : loadTime < 4000 ? 'orange' : loadTime < 6000 ? 'yellow' : 'red'
-                    }
+                    },
+                    consoleErrors,
+                    failedRequests
                 }
             });
             
