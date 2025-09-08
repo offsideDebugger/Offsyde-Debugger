@@ -6,6 +6,9 @@ export default function Home() {
       <h1 className="">Welcome to Offsyde</h1>
       <p className="">Your one-stop solution for all your needs.</p>
       <Link href="/paggetests">Crawl Urls</Link>
+      <br />
+      <Link href="/audits">Run Audits</Link>
+      <br />
      
     </div>
   );

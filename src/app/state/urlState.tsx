@@ -18,6 +18,31 @@ interface ResponseData {
 }
 
 
+export interface PageSpeedData {
+    data?: {
+        url: string;
+        title: string;
+        loadTime?: string;
+        metrics?: {
+            domContentLoaded: string;
+            pageLoadComplete: string;
+            timeToFirstByte: string;
+            domElements: number;
+            images: number;
+            scripts: number;
+            stylesheets: number;
+        };
+        performance?: {
+            grade: string;
+            color: string;
+        };
+    };
+    success?: boolean;
+    error?: string;
+
+}
+
+
 // Defined the shapes of the state
 
 interface UrlState {
@@ -31,10 +56,16 @@ interface ResponseDataState{
 }
 
 
+
 const useUrlStore = create<UrlState>((set) => ({
   url: "",
   setUrl: (state) => set({ url: state.url }),
 }));
+
+interface TestDataState{
+    testData: PageSpeedData | null;
+    setTestData: (data: PageSpeedData | null) => void;
+}
 
 
 
@@ -44,6 +75,13 @@ const useResponseDataStore = create<ResponseDataState>((set) => ({
 }));
 
 
-export { useUrlStore } ;
+const useTestData = create<TestDataState>((set) => ({
+    testData: null,
+    setTestData: (data) => set({ testData: data }),
+}));
 
-export { useResponseDataStore } ;
+export { useUrlStore };
+
+export { useResponseDataStore };
+
+export { useTestData };
