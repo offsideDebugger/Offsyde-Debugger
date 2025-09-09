@@ -1,8 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
+
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+@theme{
+  --font-inter:"Inter", sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+
+
+::-webkit-scrollbar-thumb {
+  background: #1c2127;
+}
+
+::-webkit-scrollbar-track {
+  background: black;
 }
 
 @theme inline {
@@ -10,6 +30,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  
 }
 
 @media (prefers-color-scheme: dark) {

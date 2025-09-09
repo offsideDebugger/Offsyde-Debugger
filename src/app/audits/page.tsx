@@ -3,9 +3,6 @@ import { useState } from "react";
 import { useUrlStore, useResponseDataStore, PageSpeedData } from "../state/urlState";
 
 
-
-
-
 export default function Audit() {
     const [loadingTest, setLoadingTest] = useState(false);
     const [selectedRoutes, setSelectedRoutes] = useState<string[]>([]);
@@ -41,7 +38,7 @@ export default function Audit() {
         try {
             const results: PageSpeedData[] = [];
             
-            // Test selected routes
+            // auditing all routes
             for (const route of selectedRoutes) {
                 const response = await fetch('/api/pagespeed', {
                     method: 'POST',
@@ -60,7 +57,7 @@ export default function Audit() {
                 results.push(result);
             }
             
-            // Store all results
+        
             setRouteResults(results);
             
         } catch (error) {

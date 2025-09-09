@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 
 
@@ -67,7 +68,10 @@ interface TestDataState{
     setTestData: (data: PageSpeedData | null) => void;
 }
 
-
+const useSelectedRoutesStore = create<{ selectedRoutes: string[]; setSelectedRoutes: (routes: string[]) => void }>((set) => ({
+    selectedRoutes: [],
+    setSelectedRoutes: (routes) => set({ selectedRoutes: routes }),
+}));
 
 const useResponseDataStore = create<ResponseDataState>((set) => ({
     responseData: null,
@@ -80,8 +84,17 @@ const useTestData = create<TestDataState>((set) => ({
     setTestData: (data) => set({ testData: data }),
 }));
 
+const useAuditResultsStore = create<{ auditResults: PageSpeedData[]; setAuditResults: (results: PageSpeedData[]) => void }>((set) => ({
+    auditResults: [],
+    setAuditResults: (results) => set({ auditResults: results }),
+}));
+
 export { useUrlStore };
 
 export { useResponseDataStore };
 
 export { useTestData };
+
+export { useSelectedRoutesStore };
+
+export { useAuditResultsStore };

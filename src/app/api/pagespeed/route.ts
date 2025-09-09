@@ -43,8 +43,7 @@ export async function POST(request: NextRequest) {
                 if (!response.ok())
                     failedRequests.push(`${response.url()} - ${response.status()}`);
             });
-            
-            // Measure performance metrics using browser APIs
+         
             const metrics = await page.evaluate(() => {
                 const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
                 return {
