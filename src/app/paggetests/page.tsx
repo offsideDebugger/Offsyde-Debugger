@@ -19,25 +19,8 @@ export default function PageTests() {
         if (!url) return;
         
         setLoading(true);
-
-        //using cheerio for localhost urls
-        if(url.includes("localhost")){
-            console.log("using cheerio")
-            try {
-            const result = await extractLinksCheerio(url);
-            console.log('API Response:', result);
-            useResponseDataStore.getState().setResponseData( {data: result, success: true}  );
-    
-        } catch (error) {
-            console.error('Error:', error);
-            useResponseDataStore.getState().setResponseData({ error: 'Failed to fetch data' });
-        } finally {
-            setLoading(false);
-        }
-        }
-
-        //using playwright for non-localhost urls
-        else{
+        //using playwright for localhost urls
+       if((url.includes("localhost")) || (url.includes("127.0.0.1"))){
             try {
                 console.log("using playwright")
                 const response = await fetch('/api/playwright-crawl', {
@@ -57,6 +40,22 @@ export default function PageTests() {
                 setLoading(false);
             }
         }
+
+        //using cheerio for non-localhost urls
+        else{
+            console.log("using cheerio")
+            try {
+            const result = await extractLinksCheerio(url);
+            console.log('API Response:', result);
+            useResponseDataStore.getState().setResponseData( {data: result, success: true}  );
+    
+        } catch (error) {
+            console.error('Error:', error);
+            useResponseDataStore.getState().setResponseData({ error: 'Failed to fetch data' });
+        } finally {
+            setLoading(false);
+        }
+        }
     };
 
     function SetUrl(e: React.ChangeEvent<HTMLInputElement>){
@@ -72,14 +71,14 @@ export default function PageTests() {
 
         {/* Routes Crawling */}
 
-        <h1 className="text-2xl font-bold mb-4">Page Speed Tests</h1>
+        <h1 className="mb-4 text-2xl font-bold">Page Speed Tests</h1>
         <p className="mb-4">Test the speed of your pages here.</p>
         
         <form onSubmit={handleSubmit} className="mb-4">
             <input 
                 type="text" 
                 placeholder="Enter URL (e.g., https://example.com)" 
-                className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none w-80" 
+                className="p-2 w-80 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" 
                 value={url} 
                 onChange={SetUrl}
                 required
@@ -87,7 +86,7 @@ export default function PageTests() {
             <button 
                 type="submit"
                 disabled={loading}
-                className="ml-2 p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                className="ml-2 p-2 text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-gray-400"
             >
                 {loading ? 'KickOff in Progress...' : 'KickOff Scan'}
             </button>
@@ -97,7 +96,7 @@ export default function PageTests() {
          
         {responseData && (
             <div className="mt-6 p-4 border rounded">
-                <h2 className="text-xl font-semibold mb-2">Response Data:</h2>
+                <h2 className="mb-2 text-xl font-semibold">Response Data:</h2>
                 {responseData.error ? (
                     <p className="text-red-500">Error: {responseData.error}</p>
                 ) : (
@@ -111,7 +110,7 @@ export default function PageTests() {
                         {responseData.data && responseData.data.routes && (
                             <div>
                                 <h3 className="font-semibold">Routes Found ({responseData.data.routes.length}):</h3>
-                                <ul className="list-disc list-inside max-h-40 overflow-y-auto">
+                                <ul className="overflow-y-auto max-h-40 list-disc list-inside">
                                     {responseData.data.routes.slice(0, 20).map((route: string, index: number) => (
                                         <li key={index} className="text-sm">{route}</li>
                                     ))}
@@ -125,7 +124,7 @@ export default function PageTests() {
                 )}
             </div>
         )}
-         <Link href="/" className="text-blue-500 hover:underline mb-4 block">Go back to Home</Link>
+         <Link href="/" className="block mb-4 text-blue-500 hover:underline">Go back to Home</Link>
     </div>
   );
 }

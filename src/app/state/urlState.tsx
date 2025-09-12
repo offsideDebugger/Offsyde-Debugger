@@ -57,6 +57,12 @@ interface ResponseDataState{
 }
 
 
+interface BrokenImagesState{
+    brokenImages: string[];
+    setBrokenImages: (results: string[]) => void;
+}
+
+
 
 const useUrlStore = create<UrlState>((set) => ({
   url: "",
@@ -69,6 +75,11 @@ interface TestDataState{
 }
 
 const useSelectedRoutesStore = create<{ selectedRoutes: string[]; setSelectedRoutes: (routes: string[]) => void }>((set) => ({
+    selectedRoutes: [],
+    setSelectedRoutes: (routes) => set({ selectedRoutes: routes }),
+}));
+
+const useDOMInatorSelectedRoutesStore = create<{ selectedRoutes: string[]; setSelectedRoutes: (routes: string[]) => void }>((set) => ({
     selectedRoutes: [],
     setSelectedRoutes: (routes) => set({ selectedRoutes: routes }),
 }));
@@ -88,6 +99,16 @@ const useAuditResultsStore = create<{ auditResults: PageSpeedData[]; setAuditRes
     auditResults: [],
     setAuditResults: (results) => set({ auditResults: results }),
 }));
+
+
+const useBrokenImagesStore = create<BrokenImagesState>((set) => ({
+    brokenImages: [],
+    setBrokenImages: (results) => set({ brokenImages: results }),
+}));
+
+export { useBrokenImagesStore };
+
+export { useDOMInatorSelectedRoutesStore };
 
 export { useUrlStore };
 

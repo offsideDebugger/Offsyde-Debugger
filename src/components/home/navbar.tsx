@@ -11,7 +11,7 @@ const links=[{
 },
 {
     name:"DOMinator",
-    path:"/dominators"
+    path:"/dominator"
 },
 {
     name:"Playmaker",
