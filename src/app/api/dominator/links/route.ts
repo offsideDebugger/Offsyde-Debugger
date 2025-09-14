@@ -22,15 +22,17 @@ export async function POST(request: Request) {
 
         // Extract stylesheet information
         const stylesheets = await page.$$eval('link[rel="stylesheet"]', (links) => {
+            const base = window.location.href;
             return links.map((link, index) => {
                 const href = link.getAttribute('href');
                 const media = link.getAttribute('media');
                 const type = link.getAttribute('type');
                 const crossorigin = link.getAttribute('crossorigin');
                 
+                const normalizedHref = href ? (() => { try { return new URL(href, base).toString(); } catch { return href; } })() : '';
                 return {
                     index,
-                    href: href || "",
+                    href: normalizedHref,
                     media: media || "",
                     type: type || "",
                     crossorigin: crossorigin || "",
@@ -42,6 +44,7 @@ export async function POST(request: Request) {
 
         // Extract JavaScript file information
         const jsScripts = await page.$$eval('script[src]', (scripts) => {
+            const base = window.location.href;
             return scripts.map((script, index) => {
                 const src = script.getAttribute('src');
                 const type = script.getAttribute('type');
@@ -49,9 +52,10 @@ export async function POST(request: Request) {
                 const defer = script.hasAttribute('defer');
                 const crossorigin = script.getAttribute('crossorigin');
                 
+                const normalizedSrc = src ? (() => { try { return new URL(src, base).toString(); } catch { return src; } })() : '';
                 return {
                     index,
-                    src: src || "",
+                    src: normalizedSrc,
                     type: type || "",
                     async,
                     defer,
@@ -138,12 +142,13 @@ export async function POST(request: Request) {
         const brokenStylesheets = stylesheetResults.filter(sheet => sheet.issues.length > 0);
         const brokenScripts = jsResults.filter(script => script.issues.length > 0);
 
-        // Clean up browser
+        // Capture title BEFORE closing browser
+        const title = await page.title().catch(() => '');
         await browser.close();
 
         // Return analysis results
         return new Response(JSON.stringify({
-            title: await page.title(),
+            title,
             brokenStylesheets,
             brokenScripts,
             stylesheetCount: stylesheets.length,
@@ -155,9 +160,10 @@ export async function POST(request: Request) {
             }
         }), { status: 200 });
 
+
     } catch (error) {
-        console.error("Error processing the page:", error);
-        await browser.close();
+    console.error("Error processing the page:", error);
+    await browser.close().catch(() => {});
         return new Response(JSON.stringify({ error: "Failed to process the URL" }), { status: 500 });
     }
 }

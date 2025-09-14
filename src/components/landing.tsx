@@ -13,19 +13,19 @@ type Feature = {
 
 const features: Feature[] = [
   {
-    name: "Scouting",
+    name: "Scoutings",
     title: "Route Crawling",
     desc: "Crawl a site and discover all reachable routes from a starting URL.",
     icon: "🕵️",
   },
   {
-    name: "Forensics",
+    name: "Audits",
     title: "Lighthouse-style Audits",
     desc: "Run performance, accessibility and SEO audits on selected routes.",
     icon: "🔍",
   },
   {
-    name: "DOMinator",
+    name: "FrontLine",
     title: "Frontend Debugging",
     desc: "Detect broken links, missing images, detached buttons and UI issues.",
     icon: "🎯",
@@ -57,7 +57,7 @@ export default function Landing(): React.ReactElement {
               <h1 className="text-4xl font-bold leading-tight md:text-6xl">
                 Debug. Audit. Report.
                 <br />
-                <span className="text-neutral-400 font-medium">Deep site forensics, frontend to backend</span>
+                <span className="text-neutral-400 font-medium">Deep site tests, frontend to backend</span>
               </h1>
 
               <p className="max-w-2xl text-lg text-neutral-400">
@@ -137,12 +137,12 @@ export default function Landing(): React.ReactElement {
                 Enter your base URL. The Scoutings tool crawls and lists discovered routes for you to pick from.
               </li>
               <li>
-                <strong className="block text-white">2 - Forensics</strong>
+                <strong className="block text-white">2 - Audits</strong>
                 Select routes (or run across all routes) to run Lighthouse-style audits and receive performance & accessibility scores.
               </li>
               <li>
-                <strong className="block text-white">3 - DOMinator</strong>
-                From a selection of frontend checks (broken links, missing images, unclickable buttons), DOMinator reports all findings across routes.
+                <strong className="block text-white">3 - Frontline</strong>
+                From a selection of frontend checks (broken links, missing images, unclickable buttons), Frontend reports all findings across routes.
               </li>
               <li>
                 <strong className="block text-white">4 - Playmaker</strong>
@@ -170,11 +170,11 @@ export default function Landing(): React.ReactElement {
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="inline-block w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-                  Forensics auditing
+                  Audits 
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="inline-block w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
-                  DOMinator scanning
+                  Frontend Offsides
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>

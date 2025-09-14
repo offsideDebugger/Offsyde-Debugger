@@ -137,6 +137,38 @@ export interface DominatorCSSData {
     inlineStylesCount: number;
 }
 
+// Playmaker API Response Interfaces
+export interface PlaymakerResult {
+    url: string;
+    status: number;
+    statusSeverity: 'good' | 'warn' | 'bad';
+    ttfb: number;
+    ttfbSeverity: 'good' | 'warn' | 'bad';
+    redirects: number;
+    headers: {
+        cacheControl: {
+            present: number;
+            severity: 'good' | 'warn' | 'bad';
+        };
+        cors: {
+            present: number;
+            severity: 'good' | 'warn' | 'bad';
+        };
+        contentType: {
+            present: number;
+            severity: 'good' | 'warn' | 'bad';
+        };
+    };
+    jsonEmpty: number;
+    jsonSeverity: 'good' | 'warn' | 'bad' | 'neutral';
+    loadTestAvg: number;
+    loadSeverity: 'good' | 'warn' | 'bad';
+}
+
+export interface PlaymakerData {
+    results: PlaymakerResult[];
+}
+
 
 // Defined the shapes of the state
 
@@ -150,26 +182,36 @@ interface ResponseDataState{
     setResponseData: (data: ResponseData | null) => void;
 }
 
-
+//cap
 interface BrokenImagesState{
     brokenImages: string[];
     setBrokenImages: (results: string[]) => void;
 }
 
-// Dominator API State interfaces
+// Dominator API State interfaces - Updated to handle multiple routes
 interface DominatorDataState {
-    dominatorData: DominatorData | null;
-    setDominatorData: (data: DominatorData | null) => void;
+    dominatorData: Record<string, DominatorData> | null; // Route -> Data mapping
+    setDominatorData: (route: string, data: DominatorData | null) => void;
+    clearAllData: () => void;
 }
 
 interface DominatorLinksDataState {
-    dominatorLinksData: DominatorLinksData | null;
-    setDominatorLinksData: (data: DominatorLinksData | null) => void;
+    dominatorLinksData: Record<string, DominatorLinksData> | null; // Route -> Data mapping
+    setDominatorLinksData: (route: string, data: DominatorLinksData | null) => void;
+    clearAllData: () => void;
 }
 
 interface DominatorCSSDataState {
-    dominatorCSSData: DominatorCSSData | null;
-    setDominatorCSSData: (data: DominatorCSSData | null) => void;
+    dominatorCSSData: Record<string, DominatorCSSData> | null; // Route -> Data mapping
+    setDominatorCSSData: (route: string, data: DominatorCSSData | null) => void;
+    clearAllData: () => void;
+}
+
+// Playmaker API State interface
+interface PlaymakerDataState {
+    playmakerData: PlaymakerData | null;
+    setPlaymakerData: (data: PlaymakerData | null) => void;
+    clearData: () => void;
 }
 
 
@@ -216,20 +258,42 @@ const useBrokenImagesStore = create<BrokenImagesState>((set) => ({
     setBrokenImages: (results) => set({ brokenImages: results }),
 }));
 
-// Dominator API Zustand stores
+// Dominator API Zustand stores - Updated to handle multiple routes
 const useDominatorDataStore = create<DominatorDataState>((set) => ({
-    dominatorData: null,
-    setDominatorData: (data) => set({ dominatorData: data }),
+    dominatorData: {},
+    setDominatorData: (route, data) => set((state) => ({
+        dominatorData: data 
+            ? { ...state.dominatorData, [route]: data }
+            : Object.fromEntries(Object.entries(state.dominatorData || {}).filter(([key]) => key !== route))
+    })),
+    clearAllData: () => set({ dominatorData: {} }),
 }));
 
 const useDominatorLinksDataStore = create<DominatorLinksDataState>((set) => ({
-    dominatorLinksData: null,
-    setDominatorLinksData: (data) => set({ dominatorLinksData: data }),
+    dominatorLinksData: {},
+    setDominatorLinksData: (route, data) => set((state) => ({
+        dominatorLinksData: data 
+            ? { ...state.dominatorLinksData, [route]: data }
+            : Object.fromEntries(Object.entries(state.dominatorLinksData || {}).filter(([key]) => key !== route))
+    })),
+    clearAllData: () => set({ dominatorLinksData: {} }),
 }));
 
 const useDominatorCSSDataStore = create<DominatorCSSDataState>((set) => ({
-    dominatorCSSData: null,
-    setDominatorCSSData: (data) => set({ dominatorCSSData: data }),
+    dominatorCSSData: {},
+    setDominatorCSSData: (route, data) => set((state) => ({
+        dominatorCSSData: data 
+            ? { ...state.dominatorCSSData, [route]: data }
+            : Object.fromEntries(Object.entries(state.dominatorCSSData || {}).filter(([key]) => key !== route))
+    })),
+    clearAllData: () => set({ dominatorCSSData: {} }),
+}));
+
+// Playmaker API Zustand store
+const usePlaymakerDataStore = create<PlaymakerDataState>((set) => ({
+    playmakerData: null,
+    setPlaymakerData: (data) => set({ playmakerData: data }),
+    clearData: () => set({ playmakerData: null }),
 }));
 
 export { useBrokenImagesStore };
@@ -252,3 +316,6 @@ export { useDominatorDataStore };
 export { useDominatorLinksDataStore };
 
 export { useDominatorCSSDataStore };
+
+// Export Playmaker API store
+export { usePlaymakerDataStore };

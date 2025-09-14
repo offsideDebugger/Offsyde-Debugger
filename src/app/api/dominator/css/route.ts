@@ -178,11 +178,13 @@ export async function POST(request: Request) {
             });
         }
 
+        // Capture title BEFORE closing browser
+        const title = await page.title().catch(() => '');
         await browser.close();
 
         // Return analysis results
         return new Response(JSON.stringify({
-            title: await page.title(),
+            title,
             totalIssues: allIssues.length,
             issues: allIssues,
             summary: {
@@ -195,8 +197,8 @@ export async function POST(request: Request) {
         }), { status: 200 });
 
     } catch (error) {
-        console.error("Error analyzing CSS:", error);
-        await browser.close();
+    console.error("Error analyzing CSS:", error);
+    await browser.close().catch(() => {});
         return new Response(JSON.stringify({ error: "Failed to analyze CSS for the given URL" }), { status: 500 });
     }
 }

@@ -3,15 +3,15 @@ import Link from "next/link";
 
 const links=[{
     name:"Scoutings",
-    path:"/paggetests"
+    path:"/scoutings"
 },
 {
-    name:"Forensics",
-    path:"/forensics"
+    name:"Audits",
+    path:"/audits"
 },
 {
-    name:"DOMinator",
-    path:"/dominator"
+    name:"FrontLine",
+    path:"/frontLine"
 },
 {
     name:"Playmaker",
