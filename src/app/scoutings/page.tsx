@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link";
 import {  useState } from "react";
-import { extractLinksCheerio } from "@/utils/linkCrawler";
+
 import { useUrlStore } from "../state/urlState";
 import { useResponseDataStore } from "../state/urlState";
 
@@ -19,8 +19,7 @@ export default function PageTests() {
         if (!url) return;
         
         setLoading(true);
-        //using playwright for localhost urls
-       if((url.includes("localhost")) || (url.includes("127.0.0.1"))){
+       
             try {
                 console.log("using playwright")
                 const response = await fetch('/api/playwright-crawl', {
@@ -38,24 +37,9 @@ export default function PageTests() {
                 useResponseDataStore.getState().setResponseData({ error: 'Failed to fetch data' });
             } finally {
                 setLoading(false);
-            }
+            
         }
 
-        //using cheerio for non-localhost urls
-        else{
-            console.log("using cheerio")
-            try {
-            const result = await extractLinksCheerio(url);
-            console.log('API Response:', result);
-            useResponseDataStore.getState().setResponseData( {data: result, success: true}  );
-    
-        } catch (error) {
-            console.error('Error:', error);
-            useResponseDataStore.getState().setResponseData({ error: 'Failed to fetch data' });
-        } finally {
-            setLoading(false);
-        }
-        }
     };
 
     function SetUrl(e: React.ChangeEvent<HTMLInputElement>){

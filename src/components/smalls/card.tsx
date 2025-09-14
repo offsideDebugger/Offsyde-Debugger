@@ -518,12 +518,9 @@ export const TabBasedDominatorResults: React.FC<TabBasedResultsProps> = ({ selec
     if (!selectedTab || type === 'none' || Object.keys(data).length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20">
-                <div className="p-8 bg-gray-800 border-gray-700 rounded-lg shadow-lg border">
+                <div className="p-8 border-neutral-700 rounded-lg shadow-lg border">
                     <div className="flex flex-col items-center text-center">
-                        <div className="flex items-center justify-center mb-4 w-16 h-16 bg-gray-700 rounded-full">
-                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
+                        <div className="flex items-center justify-center mb-4 w-16 h-16 rounded-full">
                         </div>
                         <h3 className="mb-2 text-lg font-medium text-gray-300">
                             {!selectedTab ? 'Select a Tab' : 'No Analysis Data'}

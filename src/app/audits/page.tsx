@@ -114,24 +114,27 @@ export default function Forensics() {
     //endgame
     return <div>
         <div className="grid grid-cols-1 h-screen md:grid-cols-[350px_1fr]">
-            <aside className="overflow-y-auto overflow-x-hidden max-h-screen">
+             <aside className="overflow-y-auto border-r border-neutral-800">
+                <nav >
                 <div className="sticky top-0 flex justify-center items-center p-8 border-b border-neutral-800 backdrop-blur-md">
-                    <button className="px-10 py-3 text-white text-[14px] font-medium bg-neutral-700 rounded-full transition-all cursor-pointer hover:bg-neutral-600" onClick={handleSelectAll} >Select All</button>
-                </div>
-                {userRoutes.length===0 && <div className="flex justify-center mt-60 p-4 h-full text-neutral-500 text-[20px]">No routes found</div>}
-                <ul>
-                    {userRoutes.map((route, i) => (
-                        <li key={i} className={`flex items-center justify-start h-16 px-4 py-4 text-[16px] border-b border-neutral-800 transition-all hover:z-10 hover:scale-x-105 hover:cursor-pointer ${
-                            selectedRoutes.includes(route) 
-                                ? 'bg-white text-neutral-900' 
-                                : 'text-neutral-400 hover:bg-neutral-800'
-                        }`}
-                        onClick={() => toggleSelect(route)}
-                        >
-                            {route}
-                        </li>
-                    ))}
-                </ul>
+                        <button className="px-10 py-3 text-white text-[14px] font-medium bg-neutral-700 rounded-full transition-all cursor-pointer hover:bg-neutral-600" onClick={handleSelectAll} >Select All</button>
+                    </div>
+                    {userRoutes.length===0 && <div className="flex justify-center mt-60 p-4 h-full text-neutral-500 text-[20px]">No routes found</div>}
+                    <ul>
+                        {userRoutes.map((route, i) => (
+                            <li key={i} className={`flex items-center justify-start h-16 px-4 py-4 text-[16px] border-b border-neutral-800 transition-all hover:z-10 hover:scale-x-105 hover:cursor-pointer ${
+                                selectedRoutes.includes(route) 
+                                    ? 'bg-white text-neutral-900' 
+                                    : 'text-neutral-400 hover:bg-neutral-800'
+                            }`}
+                            onClick={() => toggleSelect(route)}
+                            >
+                                {route}
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+
             </aside>
 
             {/* main Page */}

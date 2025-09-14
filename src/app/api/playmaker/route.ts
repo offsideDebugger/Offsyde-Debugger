@@ -12,23 +12,23 @@ export async function POST(req: NextRequest) {
           let redirectCount = 0;
           let finalUrl = route;
 
-          // --- Measure TTFB ---
+          // Measure TTFB 
           const t0 = performance.now();
           const response = await fetch(route, { redirect: "manual" });
           const ttfb = performance.now() - t0;
 
-          // --- Redirect Count ---
+          // Redirect Count
           if (response.status >= 300 && response.status < 400) {
             redirectCount++;
             finalUrl = response.headers.get("location") || route;
           }
 
-          // --- Headers ---
+          // headers
           const cacheControlPresent = response.headers.has("cache-control");
           const corsPresent = response.headers.has("access-control-allow-origin");
           const contentTypePresent = response.headers.has("content-type");
 
-          // --- Header Severities ---
+          //Header Severities
           const headers = {
             cacheControl: {
               present: cacheControlPresent ? 1 : 0,
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
             }
           };
 
-          // --- JSON Empty Check ---
+          // json issues
           let jsonEmpty = -1;
           if (contentTypePresent && response.headers.get("content-type")?.includes("application/json")) {
             const data = await response.json();
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
                 : 0;
           }
 
-          // --- Load Test (3 Hits) ---
+          //load time in 3 tries
           let totalTime = 0;
           for (let i = 0; i < 3; i++) {
             const start = performance.now();
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
           }
           const loadTestAvg = totalTime / 3;
 
-          // --- Severities ---
+          // how bad it is
           const ttfbSeverity = ttfb > 1000 ? "bad" : ttfb > 500 ? "warn" : "good";
           const loadSeverity = loadTestAvg > 1500 ? "bad" : loadTestAvg > 800 ? "warn" : "good";
           const statusSeverity = response.status >= 500 ? "bad" : response.status >= 400 ? "warn" : "good";

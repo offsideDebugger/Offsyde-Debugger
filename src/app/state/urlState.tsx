@@ -241,6 +241,11 @@ const useResponseDataStore = create<ResponseDataState>((set) => ({
     setResponseData: (data) => set({ responseData: data }),
 }));
 
+const usePlaymakerRoutesStore = create<{ selectedRoutes: string[]; setSelectedRoutes: (routes: string[]) => void }>((set) => ({
+    selectedRoutes: [],
+    setSelectedRoutes: (routes) => set({ selectedRoutes: routes }),
+}));
+
 
 const useTestData = create<TestDataState>((set) => ({
     testData: null,
@@ -319,3 +324,7 @@ export { useDominatorCSSDataStore };
 
 // Export Playmaker API store
 export { usePlaymakerDataStore };
+
+//playmaker
+
+export { usePlaymakerRoutesStore };

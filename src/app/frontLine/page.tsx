@@ -29,6 +29,14 @@ export default function DominatorPage() {
     const setSelectedRoutes = useDOMInatorSelectedRoutesStore(state => state.setSelectedRoutes);
     const [selectedTab, setSelectedTab] = useState(""); //selectedTab,setSelectedTab
 
+    // Determine if there are any analysis results present
+    const domData = useDominatorDataStore(state => state.dominatorData);
+    const linksData = useDominatorLinksDataStore(state => state.dominatorLinksData);
+    const cssData = useDominatorCSSDataStore(state => state.dominatorCSSData);
+    const hasResults = Boolean(domData && Object.keys(domData).length)
+        || Boolean(linksData && Object.keys(linksData).length)
+        || Boolean(cssData && Object.keys(cssData).length);
+
 
 async function GetDOMresults() {
     setLoading(true);
@@ -159,13 +167,13 @@ async function GetDOMresults() {
             <main className="overflow-y-auto p-6">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-neutral-200">DOMinator</h1>
+                        <h1 className="text-3xl font-bold text-neutral-200">FrontLine</h1>
                         <p className="text-neutral-400">Analyze and extract images from any webpage. Use the sidebar to navigate different issue groups.</p>
                     </div>
                     
                     <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-3">
                         <div className="p-4 bg-neutral-850 rounded-lg border-neutral-800 border lg:col-span-2">
-                            <div className="flex items-center gap-3 mb-4">
+                            <div className="flex items-center gap-3">
                                 <button
                                     className="px-4 py-2 text-white bg-neutral-700 cursor-pointer rounded"
                                     onClick= { GetDOMresults }
@@ -173,7 +181,7 @@ async function GetDOMresults() {
                                     {loading ? 'Analyzing...' : 'Analyze URL'}
                                 </button>
                             </div>
-                            <div className="text-neutral-400">Results will appear here after analysis.</div>
+                            {/* Intentionally left empty to avoid duplicate empty messaging */}
                         </div>
                     </div>
                      <div>
@@ -205,9 +213,19 @@ async function GetDOMresults() {
                     <div className="py-6">
                         {loading ? (
                             <div className="flex flex-col items-center">
-                                <div className="mb-4 h-12 w-12 rounded-full border-b-2 border-neutral-400 animate-spin" />
+                                <div className="mb-4 mt-30 h-12 w-12 rounded-full border-b-2 border-neutral-400 animate-spin" />
                                 <p className="text-neutral-300">Running analysis...</p>
                             </div>
+                        ) : !hasResults ? (
+                               <>
+                                    <div className="flex justify-center">
+                                        <AuditEmptyIcon size={350} iconColor="#494848ff" accentColor="#494848ff" />
+                                    </div>
+                                    <div className="text-center">
+                                        <h1 className="mb-2 text-5xl font-bold text-neutral-200">No Frontend Tests Yet</h1>
+                                        <p className="text-lg text-neutral-400">Select routes from the left panel to start testing.</p>
+                                    </div>
+                                </>
                         ) : (
                             <TabBasedDominatorResults selectedTab={selectedTab} />
                         )}

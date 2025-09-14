@@ -1,6 +1,30 @@
 import { chromium } from "playwright";
 import axios from "axios";
 
+// Helper function to check if a URL should be exempt from network testing
+function isExemptFromNetworkTest(url: string): boolean {
+    const exemptPatterns = [
+        /_next\/static\/css\//, // Next.js static CSS
+        /_next\/static\/chunks\//, // Next.js chunks
+        /_next\/static\/js\//, // Next.js static JS
+        /\/__next\/static\//, // Alternative Next.js pattern
+        /\/webpack\//, // Webpack dev server
+        /\/hot-update\.(css|js)$/, // Hot reload files
+        /\/app-.*\.(css|js)$/, // App-specific generated files
+        /\/pages-.*\.(css|js)$/, // Pages-specific generated files
+        /\/main-.*\.(css|js)$/, // Main bundle files
+        /\/chunk-.*\.(css|js)$/, // Chunk files
+        /\/build\/static\/(css|js)\//, // Create React App build files
+        /\/dist\/static\/(css|js)\//, // Common dist folder files
+        /\/assets\/.*-[a-f0-9]{8,}\.(css|js)$/, // Vite hashed assets
+        /localhost:\d+\//, // Local development servers
+        /127\.0\.0\.1:\d+\//, // Local development servers
+        /192\.168\.\d+\.\d+:\d+\//, // Local network development servers
+    ];
+
+    return exemptPatterns.some(pattern => pattern.test(url));
+}
+
 // Analyze CSS stylesheets and JavaScript files for issues
 export async function POST(request: Request) {
     const { url } = await request.json();
@@ -74,8 +98,8 @@ export async function POST(request: Request) {
             // Check if stylesheet has missing src
             if (!stylesheet.hasValidSrc) {
                 issues.push('missing href attribute');
-            } else {
-                // Test stylesheet availability
+            } else if (!isExemptFromNetworkTest(stylesheet.href)) {
+                // Test stylesheet availability (skip build-generated assets)
                 try {
                     const response = await axios.head(stylesheet.href, { 
                         timeout: 5000,
@@ -110,8 +134,8 @@ export async function POST(request: Request) {
             // Check if script has missing src
             if (!script.hasValidSrc) {
                 issues.push('missing src attribute');
-            } else {
-                // Test JavaScript file availability
+            } else if (!isExemptFromNetworkTest(script.src)) {
+                // Test JavaScript file availability (skip build-generated assets)
                 try {
                     const response = await axios.head(script.src, { 
                         timeout: 5000,

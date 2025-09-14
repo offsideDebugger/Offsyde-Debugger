@@ -13,6 +13,29 @@ interface CSSIssue {
     status?: number;
 }
 
+// Helper function to check if a URL should be exempt from network testing
+function isExemptFromNetworkTest(url: string): boolean {
+    const exemptPatterns = [
+        /_next\/static\/css\//, // Next.js static CSS
+        /_next\/static\/chunks\//, // Next.js chunks
+        /\/__next\/static\//, // Alternative Next.js pattern
+        /\/webpack\//, // Webpack dev server
+        /\/hot-update\.css$/, // Hot reload CSS
+        /\/app-.*\.css$/, // App-specific generated CSS
+        /\/pages-.*\.css$/, // Pages-specific generated CSS
+        /\/main-.*\.css$/, // Main bundle CSS
+        /\/chunk-.*\.css$/, // Chunk CSS files
+        /\/build\/static\/css\//, // Create React App build CSS
+        /\/dist\/static\/css\//, // Common dist folder CSS
+        /\/assets\/.*-[a-f0-9]{8,}\.css$/, // Vite hashed assets
+        /localhost:\d+\//, // Local development servers
+        /127\.0\.0\.1:\d+\//, // Local development servers
+        /192\.168\.\d+\.\d+:\d+\//, // Local network development servers
+    ];
+
+    return exemptPatterns.some(pattern => pattern.test(url));
+}
+
 // Main CSS analysis API endpoint  
 export async function POST(request: Request) {
     const { url } = await request.json();
@@ -66,7 +89,12 @@ export async function POST(request: Request) {
                 continue;
             }
 
-            // Test stylesheet accessibility
+            // Test stylesheet accessibility (skip build-generated assets)
+            if (isExemptFromNetworkTest(sheet.href)) {
+                // Skip network testing for build-generated CSS files
+                continue;
+            }
+
             try {
                 const response = await axios.head(sheet.href, { 
                     timeout: 5000,
