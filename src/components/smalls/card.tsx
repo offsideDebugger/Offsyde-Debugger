@@ -517,11 +517,9 @@ export const TabBasedDominatorResults: React.FC<TabBasedResultsProps> = ({ selec
     // Show empty state if no tab is selected or no data
     if (!selectedTab || type === 'none' || Object.keys(data).length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20">
+            <div className="flex flex-col items-center justify-center mt-20 py-20">
                 <div className="p-8 border-neutral-700 rounded-lg shadow-lg border">
                     <div className="flex flex-col items-center text-center">
-                        <div className="flex items-center justify-center mb-4 w-16 h-16 rounded-full">
-                        </div>
                         <h3 className="mb-2 text-lg font-medium text-gray-300">
                             {!selectedTab ? 'Select a Tab' : 'No Analysis Data'}
                         </h3>

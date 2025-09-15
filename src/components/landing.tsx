@@ -67,7 +67,7 @@ export default function Landing(): React.ReactElement {
               </p>
 
               <div className="flex items-center gap-4">
-                <Link href="/paggetests" className="inline-block px-6 py-3 text-black font-semibold bg-white rounded-md">Get started</Link>
+                <Link href="/scoutings" className="inline-block px-6 py-3 text-black font-semibold bg-white rounded-md">Get started</Link>
                 <a href="#features" className="text-sm text-neutral-400 hover:text-white">See features →</a>
               </div>
             </div>
@@ -187,7 +187,7 @@ export default function Landing(): React.ReactElement {
               <h3 className="mb-3 font-bold">Output</h3>
               <p className="text-sm text-neutral-400">Statsheets compile route lists, audit scores, and problem summaries into downloadable reports you can share with stakeholders.</p>
               <div className="flex gap-3 mt-4">
-                <Link href="/paggetests" className="px-4 py-2 text-black bg-white rounded-md">Run a scan</Link>
+                <Link href="/audits" className="px-4 py-2 text-black bg-white rounded-md">Run a scan</Link>
                 <a href="#features" className="px-4 py-2 text-sm text-neutral-300 border-white/10 rounded-md border">Learn more</a>
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function Landing(): React.ReactElement {
           <div className="mx-auto max-w-4xl text-center">
             <h3 className="mb-3 text-2xl font-bold">Ready to dig deep?</h3>
             <p className="mb-6 text-neutral-400">Start by entering a URL and let Offsyde map and analyze your site.</p>
-            <Link href="/paggetests" className="inline-block px-6 py-3 text-black font-semibold bg-white rounded-md">Start analysis</Link>
+            <Link href="/scoutings" className="inline-block px-6 py-3 text-black font-semibold bg-white rounded-md">Start analysis</Link>
             <div className="mt-10 mx-auto w-full border-neutral-800 border"></div>
             <div className="mt-16 text-neutral-500">
                 <span className="text-md">&copy;{new Date().getFullYear()} Offsyde by </span> <a href="https://x.com/offsideDebugger" className="text-neutral-300 text-md"><u>@offsideDebugger</u></a>. <span>All rights reserved.</span>

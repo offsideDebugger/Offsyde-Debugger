@@ -83,7 +83,7 @@ export default function PageTests() {
 
                     {/* Results */}
                     {!responseData ? (
-                        <div className="flex flex-col items-center justify-center py-24">
+                        <div className="flex flex-col items-center justify-center mt-20 py-24">
                             <div className="mb-6 h-16 w-16 rounded-full border-b-4 border-neutral-600 animate-spin" hidden={!loading}></div>
                             <p className="text-neutral-400">{loading ? 'Scouting in progress…' : 'Enter a URL and hit Scout.'}</p>
                         </div>
