@@ -28,7 +28,7 @@ export default function Forensics() {
                 
                 // auditing all routes
                 for (const route of selectedRoutes) {
-                    const response = await fetch(`https://offsydeb.onrender.com/api/audits`, {
+                    const response = await fetch(`/api/audits`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export default function Forensics() {
         setLoadingSingleAudit(route);
         
         try {
-            const response = await fetch(`https://offsydeb.onrender.com/api/audits`, {
+            const response = await fetch(`/api/audits`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

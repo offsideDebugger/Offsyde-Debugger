@@ -69,21 +69,21 @@ async function GetDOMresults() {
             
             return [
                 // DOM Analysis API
-                fetch(`https://offsydeb.onrender.com/api/dominator`, {
+                fetch(`/api/dominator`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: fullUrl }),
                 }).then(res => res.json()).then(data => ({ type: 'dom', route, data })),
 
                 // Links Analysis API
-                fetch(`https://offsydeb.onrender.com/api/dominator/links`, {
+                fetch(`/api/dominator/links`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: fullUrl }),
                 }).then(res => res.json()).then(data => ({ type: 'links', route, data })),
                 
                 // CSS Analysis API
-                fetch(`https://offsydeb.onrender.com/api/dominator/css`, {
+                fetch(`/api/dominator/css`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: fullUrl }),

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { chromium } from 'playwright';
+import { chromium } from 'playwright-core';
+import chromiumPkg from '@sparticuz/chromium';
 
 export async function POST(request: NextRequest) {
     try {
@@ -12,9 +13,10 @@ export async function POST(request: NextRequest) {
         console.log('Starting page speed test for:', url);
         
         // Launch browser
-        const browser = await chromium.launch({ 
+        const browser = await chromium.launch({
+            args: chromiumPkg.args,
+            executablePath: await chromiumPkg.executablePath(),
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         
         const context = await browser.newContext();

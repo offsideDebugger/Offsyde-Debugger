@@ -4,19 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build", 
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "playwright install chromium || true"
+    "lint": "eslint"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^138.0.2",
     "@types/axios": "^0.9.36",
     "axios": "^1.11.0",
     "cheerio": "^1.1.2",
     "chrome-launcher": "^1.2.0",
     "lighthouse": "^12.8.2",
     "next": "15.5.2",
-    "playwright": "^1.55.0",
+    "playwright-core": "^1.55.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zustand": "^5.0.8"

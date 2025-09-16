@@ -1,4 +1,5 @@
-import { chromium } from "playwright";
+import { chromium } from 'playwright-core';
+import chromiumPkg from '@sparticuz/chromium';
 import axios from "axios";
 
 // Helper function to check if a URL should be exempt from network testing
@@ -32,10 +33,11 @@ export async function POST(request: Request) {
         return new Response(JSON.stringify({ error: "URL is required" }), { status: 400 });
     }
 
-    // Launch browser with security flags
-    const browser = await chromium.launch({ 
+    // Launch browser with serverless Chrome
+    const browser = await chromium.launch({
+        args: chromiumPkg.args,
+        executablePath: await chromiumPkg.executablePath(),
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     
     const page = await browser.newPage();

@@ -1,4 +1,5 @@
-import { chromium } from "playwright";
+import { chromium } from 'playwright-core';
+import chromiumPkg from '@sparticuz/chromium';
 import axios from "axios";
 
 // CSS Issue interface
@@ -46,8 +47,9 @@ export async function POST(request: Request) {
 
     // Launch browser with security flags
     const browser = await chromium.launch({
+        args: chromiumPkg.args,
+        executablePath: await chromiumPkg.executablePath(),
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
     const context = await browser.newContext({

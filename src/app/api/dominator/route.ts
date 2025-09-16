@@ -1,5 +1,6 @@
 
-import { chromium } from "playwright";
+import { chromium } from 'playwright-core';
+import chromiumPkg from '@sparticuz/chromium';
 import axios from "axios";
 
 
@@ -10,10 +11,11 @@ export async function POST(request: Request) {
         return new Response(JSON.stringify({ error: "URL is required" }), { status: 400 });
     }
 
-    // Launch browser with security flags for server environments
-    const browser=await chromium.launch({ 
+    // Launch browser with serverless Chrome
+    const browser = await chromium.launch({
+        args: chromiumPkg.args,
+        executablePath: await chromiumPkg.executablePath(),
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
             
         // Create browser context with realistic user agent
@@ -230,7 +232,7 @@ export async function POST(request: Request) {
                     issues.push('broken image');
                 }
                 
-                // 3. Network reachability check (only if we have a valid src and it's not broken client-side)
+                // Network reachability check (only if we have a valid src and it's not broken client-side)
                 if (img.src && img.src.startsWith('http') && img.complete && img.naturalWidth > 0) {
                     try {
                         const res = await axios.head(img.src, { timeout: 5000 });
