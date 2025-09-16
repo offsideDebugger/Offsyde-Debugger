@@ -20,22 +20,27 @@ export function middleware(req: NextRequest) {
           body {
             margin: 0;
             height: 100vh;
-            flex-direction: column;
+            
             background: black;
             color: white;
             font-family: sans-serif;
             text-align: center;
+            display: flex;
+             justify-content: center; 
+             align-items: center; 
+      
+            padding: 20px;
           }
         </style>
       </head>
       <body>
-      <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; height: 100vh; padding: 1rem;">
+ 
         <p style="font-size: 1.5rem; font-weight: 900;">
           Offsyde is a platform for devs,<br/>
           so if you don’t make websites on a phone,<br/>
           why test it on a phone ?
         </p>
-        </div>
+     
 
       </body>
       </html>
@@ -47,7 +52,7 @@ export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// This ensures middleware runs on ALL routes
+
 export const config = {
   matcher: "/:path*",
 };

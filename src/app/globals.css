@@ -1,53 +1,96 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
+/* Theme tokens */
+:root {
+  --background: #ffffff;
+  --foreground: #0b1220;
+  --muted: #6b7280;
+  --card: #f8fafc;
+  --glass: rgba(255,255,255,0.04);
+  --accent: #6366f1;
+  --radius: 12px;
+}
 
-
-
+@media (prefers-color-scheme: dark) {
   :root {
-    --background: #ffffff;
-    --foreground: #0b1220;
-    --muted: #6b7280;
-    --card: #f8fafc;
-    --glass: rgba(255,255,255,0.04);
-    --accent: #6366f1;
-    --radius: 12px;
+    --background: linear-gradient(180deg, #060709 0%, #0b0b0b 100%);
+    --foreground: #e6eef8;
+    --muted: #9aa4b2;
+    --card: #0b1014;
+    --glass: rgba(255,255,255,0.03);
+    --accent: #7c8cff;
   }
+}
 
-  /* Dark mode tweaks */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: linear-gradient(180deg, #060709 0%, #0b0b0b 100%);
-      --foreground: #e6eef8;
-      --muted: #9aa4b2;
-      --card: #0b1014;
-      --glass: rgba(255,255,255,0.03);
-      --accent: #7c8cff;
-    }
+/* Base body */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(100,100,110,0.6); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Reusable card and UI helpers */
+.ui-card { background: var(--card); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(2,6,23,0.45); }
+.ui-glass { background: var(--glass); border-radius: 10px; }
+.btn-primary { background: var(--accent); color: white; border-radius: 9999px; padding: 0.6rem 1.25rem; }
+.btn-ghost { background: transparent; color: var(--foreground); border-radius: 0.75rem; padding: 0.45rem 0.9rem; }
+
+/* Subtle custom utility animations */
+.animate-pulse-slow { animation: pulse 3s ease-in-out infinite; }
+.scale-102 { transform: scale(1.02); }
+
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+/* Screen/print visibility helpers */
+.print-only { display: none; }
+
+/* Print-only styles (scoped to Statsheets) */
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  /* Remove container paddings/width constraints for print */
+  .max-w-7xl { max-width: none !important; }
+  .mx-auto { margin-left: 0 !important; margin-right: 0 !important; }
+  .px-4 { padding-left: 0 !important; padding-right: 0 !important; }
+  .my-4 { margin-top: 0 !important; margin-bottom: 8mm !important; }
+  .statsheet { max-width: none !important; width: 100% !important; margin: 0 !important; }
+  .statsheet-grid { grid-template-columns: 1fr !important; gap: 16px !important; margin-top: 4mm !important; }
+  .avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
+
+  /* Dark PDF look for statsheet only */
+  .statsheet { color: #e6eef8 !important; }
+  .statsheet a { color: #e6eef8 !important; text-decoration: none !important; }
+  .statsheet .bg-black\/40,
+  .statsheet .bg-neutral-900\/40,
+  .statsheet .bg-neutral-900\/70,
+  .statsheet .bg-neutral-950\/50 { background: #111111 !important; }
+  .statsheet .bg-neutral-800 { background: #262626 !important; }
+  .statsheet .text-neutral-100 { color: #fafafa !important; }
+  .statsheet .text-neutral-200 { color: #e5e5e5 !important; }
+  .statsheet .text-neutral-300 { color: #d4d4d4 !important; }
+  .statsheet .text-neutral-400 { color: #a3a3a3 !important; }
+  .statsheet .text-neutral-500 { color: #737373 !important; }
+  .statsheet .border-neutral-800,
+  .statsheet .border-neutral-700,
+  .statsheet .border-neutral-600 { border-color: #2a2a2a !important; }
+
+  /* Big centered brand at top */
+  .print-brand {
+    text-align: center !important;
+    font-weight: 800 !important;
+    font-size: 48px !important;
+    margin: 0 0 3mm !important;
+    color: #111111 !important;
   }
+}
 
-  /* Base body */
-  body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { background: rgba(100,100,110,0.6); border-radius: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-
-  /* Reusable card and UI helpers */
-  .ui-card { background: var(--card); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(2,6,23,0.45); }
-  .ui-glass { background: var(--glass); border-radius: 10px; }
-  .btn-primary { background: var(--accent); color: white; border-radius: 9999px; padding: 0.6rem 1.25rem; }
-  .btn-ghost { background: transparent; color: var(--foreground); border-radius: 0.75rem; padding: 0.45rem 0.9rem; }
-
-  /* Subtle custom utility animations */
-  .animate-pulse-slow { animation: pulse 3s ease-in-out infinite; }
-  .scale-102 { transform: scale(1.02); }
-
-  @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+@page { margin: 12mm; }

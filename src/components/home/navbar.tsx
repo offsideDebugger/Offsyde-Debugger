@@ -22,7 +22,7 @@ const links=[{
 }]
 export default function Navbar() {
     return (
-        <div className="z-50 sticky top-0 flex justify-around items-center gap-4 mx-auto my-4 max-w-3xl h-14 bg-white/5 rounded-[150px] border-neutral-500 shadow-md backdrop-blur-3xl border">
+    <div className="z-50 sticky top-0 flex justify-around items-center gap-4 mx-auto my-4 max-w-3xl h-14 bg-white/5 rounded-[150px] border-neutral-500 shadow-md no-print backdrop-blur-3xl border">
             <div className="ml-10 font-bold text-2xl"> 
                 <Link href="/"><h1>Offsyde</h1></Link>
             </div>
