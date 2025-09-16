@@ -154,8 +154,8 @@ export async function POST(request: Request) {
                 }
             }
             
-            // Check for performance issues
-            if (!script.async && !script.defer) {
+            // Check for performance issues (skip build-generated assets)
+            if (!script.async && !script.defer && !isExemptFromNetworkTest(script.src)) {
                 issues.push('blocking script (consider async/defer)');
             }
             
