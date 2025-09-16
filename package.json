@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall":"playwright install --with-deps"
+    "postinstall":"bunx playwright install chromium --with-deps"
   },
   "dependencies": {
     "@types/axios": "^0.9.36",
