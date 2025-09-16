@@ -60,7 +60,7 @@ export default function Playmaker(){
                 }
             });
 
-            const res = await fetch('/api/playmaker', {
+            const res = await fetch(`${process.env.URL}/api/playmaker`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ routes: fullRoutes })

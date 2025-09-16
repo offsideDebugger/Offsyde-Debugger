@@ -22,7 +22,7 @@ export default function PageTests() {
        
             try {
                 console.log("using playwright")
-                const response = await fetch('/api/playwright-crawl', {
+                const response = await fetch(`${process.env.URL}/api/playwright-crawl`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
