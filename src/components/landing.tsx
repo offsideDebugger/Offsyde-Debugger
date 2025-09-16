@@ -25,13 +25,13 @@ const features: Feature[] = [
     icon: "🔍",
   },
   {
-    name: "FrontLine",
+    name: "Visuals",
     title: "Frontend Debugging",
     desc: "Detect broken links, missing images, detached buttons and UI issues.",
     icon: "🎯",
   },
   {
-    name: "Playmaker",
+    name: "Traces",
     title: "Backend Debugging",
     desc: "Spot auth failures, DB query errors and common server-side problems.",
     icon: "⚡",
@@ -87,7 +87,7 @@ export default function Landing(): React.ReactElement {
                   <div className="flex items-center justify-center w-8 h-8 text-black font-bold bg-amber-400 rounded-md">2</div>
                   <div>
                     <div className="font-semibold">Select tools</div>
-                    <div className="text-sm text-neutral-400">Pick Forensics, DOMinator, Playmaker, or all of them.</div>
+                    <div className="text-sm text-neutral-400">Pick Audits, Visuals, Traces, or all of them.</div>
                   </div>
                 </li>
 
@@ -141,11 +141,11 @@ export default function Landing(): React.ReactElement {
                 Select routes (or run across all routes) to run Lighthouse-style audits and receive performance & accessibility scores.
               </li>
               <li>
-                <strong className="block text-white">3 - Frontline</strong>
-                From a selection of frontend checks (broken links, missing images, unclickable buttons), Frontend reports all findings across routes.
+                <strong className="block text-white">3 - Visuals</strong>
+                From a selection of frontend checks (broken links, missing images, unclickable buttons), Visuals reports all findings across routes.
               </li>
               <li>
-                <strong className="block text-white">4 - Playmaker</strong>
+                <strong className="block text-white">4 - Traces</strong>
                 Run backend checks for auth flows, common DB query failures and response anomalies across your crawled routes.
               </li>
               <li>
@@ -178,7 +178,7 @@ export default function Landing(): React.ReactElement {
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                  Playmaker checking
+                  Traces checking
                 </li>
               </ul>
             </div>

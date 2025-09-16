@@ -167,7 +167,7 @@ async function GetDOMresults() {
             <main className="overflow-y-auto p-6">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-neutral-200">FrontLine</h1>
+                        <h1 className="text-3xl font-bold text-neutral-200">Visuals</h1>
                         <p className="text-neutral-400">Analyze and extract images from any webpage. Use the sidebar to navigate different issue groups.</p>
                     </div>
                     
