@@ -12,12 +12,21 @@ export async function POST(request: NextRequest) {
 
         console.log('Starting Playwright crawl for:', url);
         
-        // Launch browser with serverless Chrome
-        const browser = await chromium.launch({
-            args: chromiumPkg.args,
-            executablePath: await chromiumPkg.executablePath(),
-            headless: true,
-        });
+        // Launch browser with better error handling  
+        let browser;
+        try {
+            browser = await chromium.launch({
+                args: [...chromiumPkg.args, '--disable-dev-shm-usage', '--disable-gpu'],
+                executablePath: await chromiumPkg.executablePath(),
+                headless: true,
+            });
+        } catch (launchError) {
+            console.error('Browser launch failed:', launchError);
+            return new Response(JSON.stringify({
+                error: 'Browser initialization failed. This might be a temporary server issue.',
+                success: false
+            }), { status: 500 });
+        }
         
         const context = await browser.newContext({
             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -31,17 +40,41 @@ export async function POST(request: NextRequest) {
         try {
             // Navigate to the page
             console.log('Navigating to:', url);
-            await page.goto(url, { 
-                waitUntil: 'domcontentloaded',
-                timeout: 30000 
-            });
+            
+            // Try to load the page with fallback strategies
+            try {
+                await page.goto(url, { 
+                    waitUntil: 'domcontentloaded',
+                    timeout: 45000 
+                });
+            } catch (loadError) {
+                console.warn('DOMContentLoaded timeout, trying with networkidle:', loadError);
+                // Fallback: try with networkidle but shorter timeout
+                await page.goto(url, { 
+                    waitUntil: 'networkidle',
+                    timeout: 30000 
+                });
+            }
             
             // Get page title
             const title = await page.title() || 'No title found';
             console.log('Page title:', title);
             
-            // Wait a bit for any dynamic content to load
-            await page.waitForTimeout(2000);
+            // Wait for dynamic content and heavy page resources
+            console.log('Waiting for dynamic content to load...');
+            
+            // Try network idle first for better accuracy
+            try {
+                await page.waitForLoadState('networkidle', { timeout: 5000 });
+                console.log('Network idle achieved');
+            } catch {
+                // Fallback for heavy pages - wait longer
+                console.log('Using extended wait for heavy page');
+                await page.waitForTimeout(4000);
+            }
+            
+            // Small additional wait for any remaining dynamic content
+            await page.waitForTimeout(1000);
             
             // Extract all links from the page
             const links = await page.evaluate(() => {

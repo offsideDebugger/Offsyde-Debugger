@@ -6,8 +6,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const routes: string[] = body.routes;
 
-    const results = await Promise.all(
-      routes.map(async (route) => {
+    // Process routes in smaller batches to prevent overwhelming the server
+    const BATCH_SIZE = 10;
+    const results: Record<string, unknown>[] = [];
+    
+    for (let i = 0; i < routes.length; i += BATCH_SIZE) {
+      const batch = routes.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map(async (route) => {
         try {
           let redirectCount = 0;
           let finalUrl = route;
@@ -102,8 +108,16 @@ export async function POST(req: NextRequest) {
             loadSeverity: "bad"
           };
         }
-      })
-    );
+        })
+      );
+      
+      results.push(...batchResults);
+      
+      // Small delay between batches to prevent server overload
+      if (i + BATCH_SIZE < routes.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
 
     return NextResponse.json({ results });
   } catch {

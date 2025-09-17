@@ -3,32 +3,59 @@ import { chromium } from 'playwright-core';
 import chromiumPkg from '@sparticuz/chromium';
 import axios from "axios";
 
+// Queue system to handle concurrent requests properly
+let activeRequests = 0;
+const MAX_CONCURRENT_REQUESTS = 3;
+const requestQueue: Array<() => Promise<void>> = [];
+
+// Process queued requests
+async function processQueue() {
+    if (requestQueue.length === 0 || activeRequests >= MAX_CONCURRENT_REQUESTS) {
+        return;
+    }
+    
+    const nextRequest = requestQueue.shift();
+    if (nextRequest) {
+        activeRequests++;
+        try {
+            await nextRequest();
+        } finally {
+            activeRequests--;
+            // Process next item in queue
+            setTimeout(processQueue, 100);
+        }
+    }
+}
 
 export async function POST(request: Request) {
-    // Extract and validate the URL from request body
     const { url } = await request.json();
     if (!url) {
         return new Response(JSON.stringify({ error: "URL is required" }), { status: 400 });
     }
 
-    // Launch browser with serverless Chrome
-    const browser = await chromium.launch({
-        args: chromiumPkg.args,
-        executablePath: await chromiumPkg.executablePath(),
-        headless: true,
-    });
+    // Return a promise that will be resolved when the request is processed
+    return new Promise<Response>((resolve) => {
+        const processRequest = async () => {
+            console.log(`Processing dominator analysis for: ${url} (${activeRequests}/${MAX_CONCURRENT_REQUESTS} active)`);
             
-        // Create browser context with realistic user agent
-        const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        });
-        
-        const page = await context.newPage();
-        
-        // Set reasonable timeout for slow pages
-        page.setDefaultTimeout(30000);
-        // Wait for dynamic content to load (JS frameworks, etc.)
-        await page.waitForTimeout(2000);
+                // Launch browser with serverless Chrome
+                const browser = await chromium.launch({
+                    args: chromiumPkg.args,
+                    executablePath: await chromiumPkg.executablePath(),
+                    headless: true,
+                });
+            
+                // Create browser context with realistic user agent
+                const context = await browser.newContext({
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                });
+                
+                const page = await context.newPage();
+                
+                // Set reasonable timeout for slow pages
+                page.setDefaultTimeout(30000);
+                // Wait for dynamic content to load (JS frameworks, etc.)
+                await page.waitForTimeout(2000);
         
         try {
             // Navigate to the target URL
@@ -317,7 +344,7 @@ export async function POST(request: Request) {
             const filteredResults=results.filter((i)=> i.issues.length > 0);
             
             // Send back all the analysis results
-            return new Response(JSON.stringify({ 
+            resolve(new Response(JSON.stringify({ 
                 title, 
                 brokenImageData: filteredResults,
                 brokenVideos: brokenVideos,
@@ -326,11 +353,17 @@ export async function POST(request: Request) {
                 videoCount: videoFiles.length,
                 audioCount: audioFiles.length,
                 iframeCount: iframeFiles.length
-            }), { status: 200 });
+            }), { status: 200 }));
         } catch (error) {
             // Handle any errors that occur during analysis
             console.error('Error loading page:', error);
             await browser.close();
-            return new Response(JSON.stringify({ error: "Failed to load the page. Please ensure the URL is correct and accessible." }), { status: 500 });
+            resolve(new Response(JSON.stringify({ error: "Failed to load the page. Please ensure the URL is correct and accessible." }), { status: 500 }));
         }
+        };
+
+        // Add to queue or process immediately
+        requestQueue.push(processRequest);
+        processQueue();
+    });
 }

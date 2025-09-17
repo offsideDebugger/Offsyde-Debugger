@@ -2,22 +2,60 @@ import { NextRequest, NextResponse } from 'next/server';
 import { chromium } from 'playwright-core';
 import chromiumPkg from '@sparticuz/chromium';
 
-export async function POST(request: NextRequest) {
-    try {
-        const { url } = await request.json();
-        
-        if (!url) {
-            return NextResponse.json({ error: 'URL is required' }, { status: 400 });
-        }
+// Queue system to handle concurrent requests properly
+let activeRequests = 0;
+const MAX_CONCURRENT_REQUESTS = 3;
+const requestQueue: Array<() => Promise<void>> = [];
 
-        console.log('Starting page speed test for:', url);
+// Process queued requests
+async function processQueue() {
+    if (requestQueue.length === 0 || activeRequests >= MAX_CONCURRENT_REQUESTS) {
+        return;
+    }
+    
+    const nextRequest = requestQueue.shift();
+    if (nextRequest) {
+        activeRequests++;
+        try {
+            await nextRequest();
+        } finally {
+            activeRequests--;
+            // Process next item in queue
+            setTimeout(processQueue, 100);
+        }
+    }
+}
+
+export async function POST(request: NextRequest) {
+    const { url } = await request.json();
+    
+    if (!url) {
+        return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+    }
+
+    // Return a promise that will be resolved when the request is processed
+    return new Promise<Response>((resolve) => {
+        const processRequest = async () => {
+            console.log(`Processing audit for: ${url} (${activeRequests}/${MAX_CONCURRENT_REQUESTS} active)`);
+            
+            try {
         
-        // Launch browser
-        const browser = await chromium.launch({
-            args: chromiumPkg.args,
-            executablePath: await chromiumPkg.executablePath(),
-            headless: true,
-        });
+        // Launch browser with better error handling
+        let browser;
+        try {
+            browser = await chromium.launch({
+                args: [...chromiumPkg.args, '--disable-dev-shm-usage', '--disable-gpu'],
+                executablePath: await chromiumPkg.executablePath(),
+                headless: true,
+            });
+        } catch (launchError) {
+            console.error('Browser launch failed:', launchError);
+            resolve(NextResponse.json({
+                error: 'Browser initialization failed. This might be a temporary server issue.',
+                success: false
+            }, { status: 500 }));
+            return;
+        }
         
         const context = await browser.newContext();
         const page = await context.newPage();
@@ -27,9 +65,25 @@ export async function POST(request: NextRequest) {
             const startTime = Date.now();
             
             await page.goto(url, { 
-                waitUntil: 'networkidle',
-                timeout: 50000 
+                waitUntil: 'domcontentloaded',
+                timeout: 45000 
             });
+            
+            // Wait longer for heavy pages to load resources
+            console.log('Waiting for page resources to load...');
+            
+            // Try to wait for network idle first (most accurate)
+            try {
+                await page.waitForLoadState('networkidle', { timeout: 8000 });
+                console.log('Network idle achieved');
+            } catch {
+                // If network idle times out, wait a fixed longer time for heavy pages
+                console.log('Network idle timeout, using fixed wait for heavy page');
+                await page.waitForTimeout(6000); // 6 seconds for heavy pages
+            }
+            
+            // Additional wait to ensure all dynamic content is loaded
+            await page.waitForTimeout(2000);
             
             const loadTime = Date.now() - startTime;
             
@@ -61,7 +115,7 @@ export async function POST(request: NextRequest) {
             
             await browser.close();
             
-            return NextResponse.json({
+            resolve(NextResponse.json({
                 success: true,
                 data: {
                     url,
@@ -83,24 +137,30 @@ export async function POST(request: NextRequest) {
                     consoleErrors,
                     failedRequests
                 }
-            });
+            }));
             
         } catch (pageError) {
             console.error('Error during page test:', pageError);
             await browser.close();
             
-            return NextResponse.json({
+            resolve(NextResponse.json({
                 error: `Failed to test page: ${pageError instanceof Error ? pageError.message : 'Unknown error'}`,
                 success: false
-            }, { status: 500 });
+            }, { status: 500 }));
         }
         
-    } catch (error) {
-        console.error('Page speed test error:', error);
-        
-        return NextResponse.json({
-            error: `Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            success: false
-        }, { status: 500 });
-    }
+        } catch (error) {
+            console.error('Page speed test error:', error);
+            
+            resolve(NextResponse.json({
+                error: `Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                success: false
+            }, { status: 500 }));
+        }
+        };
+
+        // Add to queue or process immediately
+        requestQueue.push(processRequest);
+        processQueue();
+    });
 }
