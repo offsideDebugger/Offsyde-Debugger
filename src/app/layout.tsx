@@ -3,7 +3,7 @@ import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/home/navbar";
 import Container from "@/components/container";
-
+import { Analytics } from '@vercel/analytics/next'
 const geistSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -45,6 +45,7 @@ export default function RootLayout({
         <Container>
           <Navbar />
             {children}
+          <Analytics />
         </Container>
       </body>
     </html>
