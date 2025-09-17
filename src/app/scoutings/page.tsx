@@ -51,7 +51,7 @@ export default function PageTests() {
             {/* Sidebar placeholder for symmetry with other pages */}
 
             {/* Main */}
-            <main className="overflow-y-auto p-6">
+            <main className="overflow-y-auto p-6 max-h-screen">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-6">
                         <h1 className="text-3xl font-bold text-neutral-200">Scouting</h1>
