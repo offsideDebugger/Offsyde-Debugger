@@ -123,38 +123,38 @@ export default  function Statsheets() {
     const metrics = [
         { 
             label: 'DOM Content Loaded', 
-            value: hasMetrics ? `${Math.round(avgMetrics.domContentLoaded / avgMetrics.count)}ms avg` : '—', 
-            accent: 'text-blue-400' 
+            value: hasMetrics ? `${Math.round(avgMetrics.domContentLoaded / avgMetrics.count)}ms avg` : 'Run Audits', 
+            accent: hasMetrics ? 'text-blue-400' : 'text-blue-400/60' 
         },
         { 
             label: 'Page Load Complete', 
-            value: hasMetrics ? `${Math.round(avgMetrics.pageLoadComplete / avgMetrics.count)}ms avg` : '—', 
-            accent: 'text-green-400' 
+            value: hasMetrics ? `${Math.round(avgMetrics.pageLoadComplete / avgMetrics.count)}ms avg` : 'Run Audits', 
+            accent: hasMetrics ? 'text-green-400' : 'text-green-400/60' 
         },
         { 
             label: 'TTFB (Browser)', 
-            value: hasMetrics ? `${Math.round(avgMetrics.timeToFirstByte / avgMetrics.count)}ms avg` : '—', 
-            accent: 'text-purple-400' 
+            value: hasMetrics ? `${Math.round(avgMetrics.timeToFirstByte / avgMetrics.count)}ms avg` : 'Run Audits', 
+            accent: hasMetrics ? 'text-purple-400' : 'text-purple-400/60' 
         },
         { 
             label: 'DOM Elements', 
-            value: hasMetrics ? `${Math.round(avgMetrics.domElements / avgMetrics.count)} avg` : '—', 
-            accent: 'text-orange-400' 
+            value: hasMetrics ? `${Math.round(avgMetrics.domElements / avgMetrics.count)} avg` : 'Run Audits', 
+            accent: hasMetrics ? 'text-orange-400' : 'text-orange-400/60' 
         },
         { 
             label: 'Images', 
-            value: totalImages > 0 ? totalImages.toString() : '—', 
-            accent: 'text-cyan-400' 
+            value: totalImages > 0 ? totalImages.toString() : 'Run Visuals', 
+            accent: totalImages > 0 ? 'text-cyan-400' : 'text-cyan-400/60' 
         },
         { 
             label: 'Scripts', 
-            value: totalScripts > 0 ? totalScripts.toString() : '—', 
-            accent: 'text-pink-400' 
+            value: totalScripts > 0 ? totalScripts.toString() : 'Run Visuals', 
+            accent: totalScripts > 0 ? 'text-pink-400' : 'text-pink-400/60' 
         },
         { 
             label: 'Stylesheets', 
-            value: totalStylesheets > 0 ? totalStylesheets.toString() : '—', 
-            accent: 'text-yellow-400' 
+            value: totalStylesheets > 0 ? totalStylesheets.toString() : 'Run Visuals', 
+            accent: totalStylesheets > 0 ? 'text-yellow-400' : 'text-yellow-400/60' 
         },
     ];
 
@@ -240,7 +240,11 @@ export default  function Statsheets() {
                             <span className="text-neutral-400">Top route by load</span>
                             <span className="text-neutral-200">
                                 {(() => {
-                                    if (!playmakerData?.results?.length) return '—';
+                                    if (!playmakerData?.results?.length) return (
+                                        <span className="text-blue-400/80 text-xs cursor-help italic" title="Run Traces test to get route performance data">
+                                            Run Traces
+                                        </span>
+                                    );
                                     const slowest = playmakerData.results.reduce((prev, curr) => 
                                         curr.loadTestAvg > prev.loadTestAvg ? curr : prev
                                     );
@@ -252,7 +256,11 @@ export default  function Statsheets() {
                             <span className="text-neutral-400">Largest script</span>
                             <span className="text-neutral-200">
                                 {(() => {
-                                    if (!dominatorLinksData || Object.keys(dominatorLinksData).length === 0) return '—';
+                                    if (!dominatorLinksData || Object.keys(dominatorLinksData).length === 0) return (
+                                        <span className="text-purple-400/80 text-xs cursor-help italic" title="Run Visuals test to get script count data">
+                                            Run Visuals
+                                        </span>
+                                    );
                                     const totalScripts = Object.values(dominatorLinksData).reduce((sum, data) => 
                                         sum + data.scriptCount, 0
                                     );
@@ -264,7 +272,11 @@ export default  function Statsheets() {
                             <span className="text-neutral-400">Missing alt images</span>
                             <span className="text-neutral-200">
                                 {(() => {
-                                    if (!dominatorData || Object.keys(dominatorData).length === 0) return '—';
+                                    if (!dominatorData || Object.keys(dominatorData).length === 0) return (
+                                        <span className="text-cyan-400/80 text-xs cursor-help italic" title="Run Visuals test to get image accessibility data">
+                                            Run Visuals
+                                        </span>
+                                    );
                                     const missingAlt = Object.values(dominatorData).reduce((sum, data) => 
                                         sum + data.brokenImageData.filter(img => !img.alt || img.alt.trim() === '').length, 0
                                     );
@@ -276,7 +288,11 @@ export default  function Statsheets() {
                             <span className="text-neutral-400">Non-200 responses</span>
                             <span className="text-neutral-200">
                                 {(() => {
-                                    if (!playmakerData?.results?.length) return '—';
+                                    if (!playmakerData?.results?.length) return (
+                                        <span className="text-red-400/80 text-xs cursor-help italic" title="Run Traces test to get HTTP status data">
+                                            Run Traces
+                                        </span>
+                                    );
                                     const non200 = playmakerData.results.filter(result => result.status !== 200).length;
                                     return non200.toString();
                                 })()}
@@ -289,9 +305,16 @@ export default  function Statsheets() {
                 <section className="p-5 bg-black/40 rounded-2xl border-neutral-800 avoid-break border md:col-span-12">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-neutral-200">Routes summary</h3>
-                        <span className="px-2 py-1 text-[11px] text-neutral-300 bg-neutral-900/70 rounded-md border-neutral-800 border">
-                            {totalRoutes} routes
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 text-[11px] text-neutral-300 bg-neutral-900/70 rounded-md border-neutral-800 border">
+                                {totalRoutes} routes
+                            </span>
+                            {!playmakerData?.results?.length && totalRoutes > 0 && (
+                                <span className="px-2 py-1 text-[10px] text-amber-400 bg-amber-900/20 rounded-md border-amber-800/30 border">
+                                    Run Playmaker for performance data
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <div className="overflow-hidden mt-3 rounded-lg border-neutral-800 border">
                         <div className="grid grid-cols-12 text-xs text-neutral-400 bg-neutral-950/50">
@@ -300,28 +323,58 @@ export default  function Statsheets() {
                             <div className="col-span-2 px-3 py-2">TTFB (Server)</div>
                             <div className="col-span-2 px-3 py-2">Load</div>
                         </div>
-                        {playmakerData?.results?.length ? (
-                            playmakerData.results.map((result, index) => (
-                                <div key={index} className="grid grid-cols-12 text-xs text-neutral-300 border-t border-neutral-800">
-                                    <div className="col-span-6 px-3 py-2 truncate">{result.url}</div>
-                                    <div className="col-span-2 px-3 py-2">
-                                        <span className={`px-2 py-1 rounded text-xs ${
-                                            result.statusSeverity === 'good' ? 'bg-green-900/30 text-green-400' :
-                                            result.statusSeverity === 'warn' ? 'bg-yellow-900/30 text-yellow-400' :
-                                            'bg-red-900/30 text-red-400'
-                                        }`}>
-                                            {result.status}
-                                        </span>
+                        {(() => {
+                            // Prioritize Playmaker data if available
+                            if (playmakerData?.results?.length) {
+                                return playmakerData.results.map((result, index) => (
+                                    <div key={index} className="grid grid-cols-12 text-xs text-neutral-300 border-t border-neutral-800">
+                                        <div className="col-span-6 px-3 py-2 truncate">{result.url}</div>
+                                        <div className="col-span-2 px-3 py-2">
+                                            <span className={`px-2 py-1 rounded text-xs ${
+                                                result.statusSeverity === 'good' ? 'bg-green-900/30 text-green-400' :
+                                                result.statusSeverity === 'warn' ? 'bg-yellow-900/30 text-yellow-400' :
+                                                'bg-red-900/30 text-red-400'
+                                            }`}>
+                                                {result.status}
+                                            </span>
+                                        </div>
+                                        <div className="col-span-2 px-3 py-2">{result.ttfb}ms</div>
+                                        <div className="col-span-2 px-3 py-2">{Math.round(result.loadTestAvg)}ms</div>
                                     </div>
-                                    <div className="col-span-2 px-3 py-2">{result.ttfb}ms</div>
-                                    <div className="col-span-2 px-3 py-2">{Math.round(result.loadTestAvg)}ms</div>
+                                ));
+                            }
+                            
+                            // Show crawled routes without performance data
+                            if (responseData?.data?.routes?.length) {
+                                return responseData.data.routes.map((route, index) => (
+                                    <div key={index} className="grid grid-cols-12 text-xs text-neutral-300 border-t border-neutral-800">
+                                        <div className="col-span-6 px-3 py-2 truncate">{route}</div>
+                                        <div className="col-span-2 px-3 py-2">
+                                            <span className="px-2 py-1 text-xs text-blue-400 bg-blue-900/20 cursor-help rounded" title="Run Traces test to get HTTP status codes">
+                                                Run Traces
+                                            </span>
+                                        </div>
+                                        <div className="col-span-2 px-3 py-2">
+                                            <span className="text-xs text-blue-400 cursor-help italic" title="Run Traces test to get server response times">
+                                                Run Traces
+                                            </span>
+                                        </div>
+                                        <div className="col-span-2 px-3 py-2">
+                                            <span className="text-xs text-blue-400 cursor-help italic" title="Run Traces test to get page load times">
+                                                Run Traces
+                                            </span>
+                                        </div>
+                                    </div>
+                                ));
+                            }
+                            
+                            // Empty state
+                            return (
+                                <div className="p-6 text-center text-sm text-neutral-500">
+                                    Run a crawl to discover routes, then run Playmaker audits for performance data.
                                 </div>
-                            ))
-                        ) : (
-                            <div className="p-6 text-center text-sm text-neutral-500">
-                                {totalRoutes > 0 ? 'Run Playmaker audits to see route performance data.' : 'Run a crawl and audits to populate this table.'}
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                 </section>
             </div>
