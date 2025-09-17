@@ -239,7 +239,7 @@ export default  function Statsheets() {
                                     <p className="text-[11px] text-neutral-500">{s.sub}</p>
                                 </div>
                                 {s.needsTest ? (
-                                    <span className="inline-flex items-center justify-center w-12 h-12 text-xs text-center bg-neutral-800/50 text-neutral-400 rounded-lg border border-neutral-700 cursor-help" title={`${s.needsTest} test to get ${s.name.toLowerCase()} score`}>
+                                    <span className="inline-flex items-center justify-center w-12 h-12 text-xs text-center text-neutral-400 bg-neutral-800/50 rounded-lg border-neutral-700 cursor-help border" title={`${s.needsTest} test to get ${s.name.toLowerCase()} score`}>
                                         {s.needsTest.replace('Run ', '')}
                                     </span>
                                 ) : (
@@ -410,7 +410,7 @@ export default  function Statsheets() {
                             // Empty state
                             return (
                                 <div className="p-6 text-center text-sm text-neutral-500">
-                                    Run a crawl to discover routes, then run trace audits for performance data.
+                                    Run a crawl to discover routes, then run traces audits for performance data.
                                 </div>
                             );
                         })()}
