@@ -85,10 +85,38 @@ export default  function Statsheets() {
     })();
     
     const scores = [
-        { name: 'Performance', grade: performanceScore.grade, color: 'bg-emerald-600/80', sub: 'avg load' },
-        { name: 'Media Health', grade: brokenElementsScore.grade, color: 'bg-sky-600/80', sub: 'broken elements' },
-        { name: 'Link Integrity', grade: linkIntegrityScore.grade, color: 'bg-violet-600/80', sub: 'script/style issues' },
-        { name: 'CSS Health', grade: cssHealthScore.grade, color: 'bg-amber-600/80', sub: 'style issues' },
+        { 
+            name: 'Performance', 
+            grade: performanceScore.grade, 
+            color: 'bg-emerald-600/80', 
+            sub: 'avg load',
+            progress: performanceScore.grade === '—' ? 0 : performanceScore.grade === 'A' ? 90 : performanceScore.grade === 'B' ? 70 : 50,
+            needsTest: performanceScore.grade === '—' ? 'Run Traces' : null
+        },
+        { 
+            name: 'Media Health', 
+            grade: brokenElementsScore.grade, 
+            color: 'bg-sky-600/80', 
+            sub: 'broken elements',
+            progress: brokenElementsScore.grade === '—' ? 0 : brokenElementsScore.grade === 'A' ? 95 : brokenElementsScore.grade === 'B' ? 75 : 40,
+            needsTest: brokenElementsScore.grade === '—' ? 'Run Visuals' : null
+        },
+        { 
+            name: 'Link Integrity', 
+            grade: linkIntegrityScore.grade, 
+            color: 'bg-violet-600/80', 
+            sub: 'script/style issues',
+            progress: linkIntegrityScore.grade === '—' ? 0 : linkIntegrityScore.grade === 'A' ? 95 : linkIntegrityScore.grade === 'B' ? 75 : 40,
+            needsTest: linkIntegrityScore.grade === '—' ? 'Run Visuals' : null
+        },
+        { 
+            name: 'CSS Health', 
+            grade: cssHealthScore.grade, 
+            color: 'bg-amber-600/80', 
+            sub: 'style issues',
+            progress: cssHealthScore.grade === '—' ? 0 : cssHealthScore.grade === 'A' ? 95 : cssHealthScore.grade === 'B' ? 75 : 40,
+            needsTest: cssHealthScore.grade === '—' ? 'Run Visuals' : null
+        },
     ];
 
     // Calculate metrics from audit results
@@ -167,7 +195,7 @@ export default  function Statsheets() {
                 <div className="flex flex-col items-start justify-between items-center gap-3 sm:flex-row">
                     <div>
                         <h1 className="text-3xl font-bold text-neutral-100 no-print md:text-4xl">Statsheets</h1>
-                        <p className="mt-2 text-neutral-400 no-print">Sharable summaries of crawls, audits, and checks—styled to your theme.</p>
+                        <p className="mt-2 text-neutral-400 no-print">Sharable summaries of crawls, audits, and checks, styled to your theme.</p>
                     </div>
                     <div className="no-print">
                         <ExportButton />
@@ -210,10 +238,21 @@ export default  function Statsheets() {
                                     <p className="text-xs text-neutral-400">{s.name}</p>
                                     <p className="text-[11px] text-neutral-500">{s.sub}</p>
                                 </div>
-                                <span className={`inline-flex items-center justify-center w-12 h-12 text-white text-xl font-bold rounded-lg ${s.color}`}>{s.grade}</span>
+                                {s.needsTest ? (
+                                    <span className="inline-flex items-center justify-center w-12 h-12 text-xs text-center bg-neutral-800/50 text-neutral-400 rounded-lg border border-neutral-700 cursor-help" title={`${s.needsTest} test to get ${s.name.toLowerCase()} score`}>
+                                        {s.needsTest.replace('Run ', '')}
+                                    </span>
+                                ) : (
+                                    <span className={`inline-flex items-center justify-center w-12 h-12 text-white text-xl font-bold rounded-lg ${s.color}`}>
+                                        {s.grade}
+                                    </span>
+                                )}
                             </div>
                             <div className="overflow-hidden mt-4 h-1.5 bg-neutral-800 rounded-full">
-                                <div className={`h-full w-2/3 rounded-full opacity-70 transition-all ${s.color}`}></div>
+                                <div 
+                                    className={`h-full rounded-full opacity-70 transition-all duration-500 ${s.needsTest ? 'bg-neutral-600' : s.color}`}
+                                    style={{ width: `${s.progress}%` }}
+                                ></div>
                             </div>
                         </div>
                     ))}
@@ -371,7 +410,7 @@ export default  function Statsheets() {
                             // Empty state
                             return (
                                 <div className="p-6 text-center text-sm text-neutral-500">
-                                    Run a crawl to discover routes, then run Playmaker audits for performance data.
+                                    Run a crawl to discover routes, then run trace audits for performance data.
                                 </div>
                             );
                         })()}
