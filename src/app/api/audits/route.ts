@@ -2,43 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { chromium } from 'playwright-core';
 import chromiumPkg from '@sparticuz/chromium';
 
-// Queue system to handle concurrent requests properly
-let activeRequests = 0;
-const MAX_CONCURRENT_REQUESTS = 3;
-const requestQueue: Array<() => Promise<void>> = [];
+// Prevent state pollution between serverless function calls
+let globalBrowser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
 
-// Process queued requests
-async function processQueue() {
-    if (requestQueue.length === 0 || activeRequests >= MAX_CONCURRENT_REQUESTS) {
-        return;
-    }
-    
-    const nextRequest = requestQueue.shift();
-    if (nextRequest) {
-        activeRequests++;
+async function forceCleanup() {
+    if (globalBrowser) {
         try {
-            await nextRequest();
-        } finally {
-            activeRequests--;
-            // Process next item in queue
-            setTimeout(processQueue, 100);
+            await globalBrowser.close();
+        } catch {
+            console.log('Cleaned up hanging audit browser');
         }
+        globalBrowser = null;
     }
 }
 
 export async function POST(request: NextRequest) {
-    const { url } = await request.json();
+    // Always clean up first to prevent errors persisting
+    await forceCleanup();
     
-    if (!url) {
-        return NextResponse.json({ error: 'URL is required' }, { status: 400 });
-    }
+    try {
+        const { url } = await request.json();
+        
+        if (!url) {
+            return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+        }
 
-    // Return a promise that will be resolved when the request is processed
-    return new Promise<Response>((resolve) => {
-        const processRequest = async () => {
-            console.log(`Processing audit for: ${url} (${activeRequests}/${MAX_CONCURRENT_REQUESTS} active)`);
-            
-            try {
+        console.log(`Starting audit for: ${url}`);
         
         // Launch browser with better error handling
         let browser;
@@ -50,11 +39,10 @@ export async function POST(request: NextRequest) {
             });
         } catch (launchError) {
             console.error('Browser launch failed:', launchError);
-            resolve(NextResponse.json({
+            return NextResponse.json({
                 error: 'Browser initialization failed. This might be a temporary server issue.',
                 success: false
-            }, { status: 500 }));
-            return;
+            }, { status: 500 });
         }
         
         const context = await browser.newContext();
@@ -115,7 +103,7 @@ export async function POST(request: NextRequest) {
             
             await browser.close();
             
-            resolve(NextResponse.json({
+            return NextResponse.json({
                 success: true,
                 data: {
                     url,
@@ -137,30 +125,24 @@ export async function POST(request: NextRequest) {
                     consoleErrors,
                     failedRequests
                 }
-            }));
+            });
             
         } catch (pageError) {
             console.error('Error during page test:', pageError);
             await browser.close();
             
-            resolve(NextResponse.json({
+            return NextResponse.json({
                 error: `Failed to test page: ${pageError instanceof Error ? pageError.message : 'Unknown error'}`,
                 success: false
-            }, { status: 500 }));
+            }, { status: 500 });
         }
         
-        } catch (error) {
-            console.error('Page speed test error:', error);
-            
-            resolve(NextResponse.json({
-                error: `Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                success: false
-            }, { status: 500 }));
-        }
-        };
-
-        // Add to queue or process immediately
-        requestQueue.push(processRequest);
-        processQueue();
-    });
+    } catch (error) {
+        console.error('Page speed test error:', error);
+        
+        return NextResponse.json({
+            error: `Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            success: false
+        }, { status: 500 });
+    }
 }

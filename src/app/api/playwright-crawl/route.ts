@@ -2,7 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { chromium } from 'playwright-core';
 import chromiumPkg from '@sparticuz/chromium';
 
+// Force clean slate - prevent state pollution between requests
+let globalBrowser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
+
+// Cleanup any hanging browser instances
+async function forceCleanup() {
+    if (globalBrowser) {
+        try {
+            await globalBrowser.close();
+        } catch {
+            console.log('Cleaned up hanging browser instance');
+        }
+        globalBrowser = null;
+    }
+}
+
+
+
 export async function POST(request: NextRequest) {
+    // ALWAYS start with cleanup to prevent state pollution
+    await forceCleanup();
+    
     try {
         const { url } = await request.json();
         
@@ -12,48 +32,86 @@ export async function POST(request: NextRequest) {
 
         console.log('Starting Playwright crawl for:', url);
         
-        // Launch browser with better error handling  
+        // Launch browser with better error handling and resource management
         let browser;
         try {
             browser = await chromium.launch({
-                args: [...chromiumPkg.args, '--disable-dev-shm-usage', '--disable-gpu'],
+                args: [
+                    ...chromiumPkg.args, 
+                    '--disable-dev-shm-usage', 
+                    '--disable-gpu',
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--single-process', // Prevent multiple processes
+                    '--disable-background-timer-throttling',
+                    '--disable-renderer-backgrounding'
+                ],
                 executablePath: await chromiumPkg.executablePath(),
                 headless: true,
             });
+            
+            // Track browser globally for cleanup
+            globalBrowser = browser;
+            
         } catch (launchError) {
             console.error('Browser launch failed:', launchError);
-            return new Response(JSON.stringify({
+            await forceCleanup(); // Clean up on launch failure
+            return NextResponse.json({
                 error: 'Browser initialization failed. This might be a temporary server issue.',
                 success: false
-            }), { status: 500 });
+            }, { status: 500 });
         }
         
         const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            // Prevent context/page premature closing
+            bypassCSP: true,
+            ignoreHTTPSErrors: true
         });
         
         const page = await context.newPage();
         
-        // Set timeout
-        page.setDefaultTimeout(30000);
+        // Set generous timeout for crawling operations
+        page.setDefaultTimeout(60000);
         
         try {
             // Navigate to the page
             console.log('Navigating to:', url);
             
-            // Try to load the page with fallback strategies
+            // Robust navigation with multiple fallback strategies
+            let navigationSuccess = false;
+            
+            // Strategy 1: Try domcontentloaded (fastest)
             try {
                 await page.goto(url, { 
                     waitUntil: 'domcontentloaded',
-                    timeout: 45000 
-                });
-            } catch (loadError) {
-                console.warn('DOMContentLoaded timeout, trying with networkidle:', loadError);
-                // Fallback: try with networkidle but shorter timeout
-                await page.goto(url, { 
-                    waitUntil: 'networkidle',
                     timeout: 30000 
                 });
+                navigationSuccess = true;
+            } catch (loadError) {
+                console.warn('DOMContentLoaded failed, trying load event:', loadError);
+                
+                // Strategy 2: Try load event
+                try {
+                    await page.goto(url, { 
+                        waitUntil: 'load',
+                        timeout: 40000 
+                    });
+                    navigationSuccess = true;
+                } catch (loadError2) {
+                    console.warn('Load event failed, trying commit only:', loadError2);
+                    
+                    // Strategy 3: Just wait for commit (most basic)
+                    await page.goto(url, { 
+                        waitUntil: 'commit',
+                        timeout: 20000 
+                    });
+                    navigationSuccess = true;
+                }
+            }
+            
+            if (!navigationSuccess) {
+                throw new Error('All navigation strategies failed');
             }
             
             // Get page title
@@ -111,6 +169,7 @@ export async function POST(request: NextRequest) {
             console.log(`Filtered to ${FinalLinks.length} same-origin links`);
             
             await browser.close();
+            globalBrowser = null; // Clear global reference
             
             return NextResponse.json({
                 success: true,
@@ -128,16 +187,28 @@ export async function POST(request: NextRequest) {
             
         } catch (pageError) {
             console.error('Error during page crawling:', pageError);
-            await browser.close();
+            
+            // Ensure browser is always closed, even on error
+            try {
+                await browser.close();
+                globalBrowser = null;
+            } catch (closeError) {
+                console.error('Error closing browser:', closeError);
+            }
+            await forceCleanup(); // Double cleanup on error
             
             return NextResponse.json({
                 error: `Failed to crawl page: ${pageError instanceof Error ? pageError.message : 'Unknown error'}`,
-                success: false
+                success: false,
+                details: 'The page might be too heavy, have JavaScript errors, or network issues'
             }, { status: 500 });
         }
         
     } catch (error) {
         console.error('Playwright crawl error:', error);
+        
+        // Force cleanup on any outer error
+        await forceCleanup();
         
         return NextResponse.json({
             error: `Crawler failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
