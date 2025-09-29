@@ -1,5 +1,8 @@
 
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const links=[{
     name:"Scoutings",
@@ -20,9 +23,13 @@ const links=[{
     name:"Statsheets",
     path:"/statsheets"
 }]
+
 export default function Navbar() {
+    const pathname = usePathname();
+    const isLandingPage = pathname === "/";
+
     return (
-    <div className="z-50 sticky top-4 flex justify-around items-center gap-4 mx-auto my-4 max-w-3xl h-14 bg-white/5 rounded-[150px] border-neutral-500 shadow-md no-print backdrop-blur-3xl border">
+        <div className={`z-50 sticky top-4 flex justify-around items-center gap-4 mx-auto my-4 max-w-3xl h-14 bg-white/5 rounded-[150px] border-neutral-500 shadow-md no-print backdrop-blur-3xl border ${isLandingPage ? 'hidden md:flex' : 'flex'}`}>
             <div className="ml-10 font-bold text-2xl"> 
                 <Link href="/"><h1>Offsyde</h1></Link>
             </div>
@@ -33,8 +40,6 @@ export default function Navbar() {
                     </div>
                 ))}
             </div>
-           
-            
         </div>
     )
 }
