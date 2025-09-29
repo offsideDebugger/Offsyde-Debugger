@@ -3,7 +3,7 @@
 
 /* Theme tokens - Always dark mode regardless of system preference */
 :root {
-  --background: linear-gradient(180deg, #060709 0%, #0b0b0b 100%);
+  --background: #0b0b0b;
   --foreground: #e6eef8;
   --muted: #9aa4b2;
   --card: #0b1014;

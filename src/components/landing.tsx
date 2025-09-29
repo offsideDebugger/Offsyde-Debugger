@@ -49,10 +49,10 @@ export default function Landing(): React.ReactElement {
     <div className="text-white">
   {/* Header is provided globally; intentionally omitted here to avoid duplication */}
 
-  {/* Hero: height equals viewport minus navbar so content is vertically centered between navbar and fold */}
-  <section style={{ height: 'calc(100vh - 72px)' } as React.CSSProperties} className="flex items-center justify-center px-4 sm:px-0">
+  {/* Hero: responsive height - full viewport on mobile (no navbar), minus navbar on desktop */}
+  <section className="flex items-center justify-center px-4 min-h-screen sm:px-0 md:min-h-[calc(100vh-72px)]">
         <Container>
-          <div className="grid items-center gap-8 mx-auto w-full max-w-6xl lg:grid-cols-2">
+          <div className="grid items-center gap-8 mx-auto py-8 w-full max-w-6xl md:py-0 lg:grid-cols-2">
             <div className="text-center space-y-6 lg:text-left">
               <h1 className="text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
                 Debug. Audit. Report.
@@ -76,7 +76,7 @@ export default function Landing(): React.ReactElement {
               <div className="text-xs font-mono text-neutral-300">Quick flow</div>
               <ol className="mt-4 space-y-3">
                 <li className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-6 h-6 text-xs text-black font-bold bg-blue-500 rounded-md sm:w-8 h-8 text-sm">1</div>
+                  <div className="flex items-center justify-center w-6 h-6 h-8 text-xs text-black font-bold text-sm bg-blue-500 rounded-md sm:w-8">1</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm sm:text-base">Enter routes</div>
                     <div className="text-xs text-neutral-400 sm:text-sm">Provide a starting URL and optional seed routes to scout.</div>
@@ -84,7 +84,7 @@ export default function Landing(): React.ReactElement {
                 </li>
 
                 <li className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-6 h-6 text-xs text-black font-bold bg-amber-400 rounded-md sm:w-8 h-8 text-sm">2</div>
+                  <div className="flex items-center justify-center w-6 h-6 h-8 text-xs text-black font-bold text-sm bg-amber-400 rounded-md sm:w-8">2</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm sm:text-base">Select tools</div>
                     <div className="text-xs text-neutral-400 sm:text-sm">Pick Audits, Visuals, Traces, or all of them.</div>
@@ -92,7 +92,7 @@ export default function Landing(): React.ReactElement {
                 </li>
 
                 <li className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-6 h-6 text-xs text-black font-bold bg-cyan-400 rounded-md sm:w-8 h-8 text-sm">3</div>
+                  <div className="flex items-center justify-center w-6 h-6 h-8 text-xs text-black font-bold text-sm bg-cyan-400 rounded-md sm:w-8">3</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm sm:text-base">Review & share</div>
                     <div className="text-xs text-neutral-400 sm:text-sm">Receive Statsheets — downloadable and sharable reports.</div>
@@ -108,7 +108,7 @@ export default function Landing(): React.ReactElement {
       <section id="features" className="py-8 sm:py-12">
         <Container>
           <h2 className="mb-6 text-xl font-bold text-center sm:text-2xl lg:text-left">Features</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <article key={f.name} className="p-4 bg-neutral-900/40 rounded-xl border-white/6 transition-transform border hover:scale-[1.02] sm:p-5">
                 <div className="flex items-center gap-3">
@@ -119,7 +119,7 @@ export default function Landing(): React.ReactElement {
                   </div>
                 </div>
 
-                <p className="mt-3 text-xs text-neutral-400 sm:mt-4 text-sm">{f.desc}</p>
+                <p className="mt-3 text-xs text-neutral-400 text-sm sm:mt-4">{f.desc}</p>
               </article>
             ))}
           </div>

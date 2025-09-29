@@ -47,7 +47,7 @@ export default function PageTests() {
     }
 
     return (
-        <div className="md:grid-cols-[320px_1fr]">
+        <div className="min-h-full md:grid-cols-[320px_1fr]">
             {/* Sidebar placeholder for symmetry with other pages */}
 
             {/* Main */}
