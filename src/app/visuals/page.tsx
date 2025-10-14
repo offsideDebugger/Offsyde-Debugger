@@ -55,59 +55,104 @@ async function GetDOMresults() {
         linksStore.clearAllData();
         cssStore.clearAllData();
 
-        // Call all three APIs for each selected route
+        // Optimized parallel processing with controlled concurrency
         const base = url.trim();
-        const promises = selectedRoutes.flatMap(route => {
-            const fullUrl = (() => {
-                try {
-                    return new URL(route, base).toString();
-                } catch {
-                    const joined = `${base.replace(/\/+$/, '')}/${String(route).replace(/^\/+/, '')}`;
-                    return joined;
-                }
-            })();
+        const results = [];
+        
+        // Helper function to make API call with retry
+        const makeApiCall = async (endpoint: string, fullUrl: string, type: string, route: string) => {
+            let retries = 2; // Reduced retries for speed
             
-            return [
-                // DOM Analysis API
-                fetch(`/api/dominator`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: fullUrl }),
-                }).then(res => res.json()).then(data => ({ type: 'dom', route, data })),
-
-                // Links Analysis API
-                fetch(`/api/dominator/links`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: fullUrl }),
-                }).then(res => res.json()).then(data => ({ type: 'links', route, data })),
+            while (retries > 0) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: fullUrl }),
+                    });
+                    
+                    if (response.status === 429) {
+                        const errorData = await response.json();
+                        const waitTime = errorData.retryAfter || 1000; // Much faster retry
+                        console.log(`Rate limited for ${type}, waiting ${waitTime}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        retries--;
+                        continue;
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);  
+                    }
+                    
+                    const data = await response.json();
+                    return { type, route, data };
+                    
+                } catch (error) {
+                    retries--;
+                    if (retries === 0) {
+                        return { 
+                            type, 
+                            route, 
+                            data: { error: `Failed after retries: ${error instanceof Error ? error.message : 'Unknown error'}` }
+                        };
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 200)); // Very fast retry
+                    }
+                }
+            }
+        };
+        
+        // Process routes in larger batches for maximum speed
+        const ROUTE_BATCH_SIZE = 6;
+        
+        for (let i = 0; i < selectedRoutes.length; i += ROUTE_BATCH_SIZE) {
+            const routeBatch = selectedRoutes.slice(i, i + ROUTE_BATCH_SIZE);
+            
+            // Create all API calls for this batch
+            const batchPromises = routeBatch.flatMap(route => {
+                const fullUrl = (() => {
+                    try {
+                        return new URL(route, base).toString();
+                    } catch {
+                        const joined = `${base.replace(/\/+$/, '')}/${String(route).replace(/^\/+/, '')}`;
+                        return joined;
+                    }
+                })();
                 
-                // CSS Analysis API
-                fetch(`/api/dominator/css`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: fullUrl }),
-                }).then(res => res.json()).then(data => ({ type: 'css', route, data }))
-            ];
-        });
-
-        // Wait for all API calls to complete
-        const results = await Promise.all(promises);
+                // All 3 API types for each route in parallel
+                return [
+                    makeApiCall('/api/dominator', fullUrl, 'dom', route),
+                    makeApiCall('/api/dominator/links', fullUrl, 'links', route),
+                    makeApiCall('/api/dominator/css', fullUrl, 'css', route)
+                ];
+            });
+            
+            // Execute batch in parallel with slight staggering
+            const batchResults = await Promise.all(batchPromises);
+            results.push(...batchResults);
+            
+            // Almost no delay between route batches
+            if (i + ROUTE_BATCH_SIZE < selectedRoutes.length) {
+                await new Promise(resolve => setTimeout(resolve, 25));
+            }
+        }
         
         // Process and store results in respective stores
         results.forEach(result => {
-            const { type, route, data } = result;
-            
-            switch (type) {
-                case 'dom':
-                    useDominatorDataStore.getState().setDominatorData(route, data);
-                    break;
-                case 'links':
-                    useDominatorLinksDataStore.getState().setDominatorLinksData(route, data);
-                    break;
-                case 'css':
-                    useDominatorCSSDataStore.getState().setDominatorCSSData(route, data);
-                    break;
+            if (result) {
+                const { type, route, data } = result;
+                
+                switch (type) {
+                    case 'dom':
+                        useDominatorDataStore.getState().setDominatorData(route, data);
+                        break;
+                    case 'links':
+                        useDominatorLinksDataStore.getState().setDominatorLinksData(route, data);
+                        break;
+                    case 'css':
+                        useDominatorCSSDataStore.getState().setDominatorCSSData(route, data);
+                        break;
+                }
             }
         });
         

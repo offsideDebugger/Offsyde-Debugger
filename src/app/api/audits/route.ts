@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { chromium } from 'playwright-core';
 import chromiumPkg from '@sparticuz/chromium';
 
+// Concurrency control for audit requests
+let activeAuditRequests = 0;
+const MAX_CONCURRENT_AUDITS = 5; // Much higher for real-world usage
+
 // Prevent state pollution between serverless function calls
 let globalBrowser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
 
@@ -17,8 +21,20 @@ async function forceCleanup() {
 }
 
 export async function POST(request: NextRequest) {
+    // Check if we're at the concurrency limit
+    if (activeAuditRequests >= MAX_CONCURRENT_AUDITS) {
+        return NextResponse.json({ 
+            error: 'Server is busy processing other audits. Please try again in a few seconds.',
+            success: false,
+            retryAfter: 1500 // Faster retry time
+        }, { status: 429 });
+    }
+
     // Always clean up first to prevent errors persisting
     await forceCleanup();
+    
+    // Increment active requests counter
+    activeAuditRequests++;
     
     try {
         const { url } = await request.json();
@@ -27,7 +43,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'URL is required' }, { status: 400 });
         }
 
-        console.log(`Starting audit for: ${url}`);
+        
         
         // Launch browser with better error handling
         let browser;
@@ -57,16 +73,15 @@ export async function POST(request: NextRequest) {
                 timeout: 45000 
             });
             
-            // Wait longer for heavy pages to load resources
-            console.log('Waiting for page resources to load...');
+            
             
             // Try to wait for network idle first (most accurate)
             try {
                 await page.waitForLoadState('networkidle', { timeout: 8000 });
-                console.log('Network idle achieved');
+                
             } catch {
                 // If network idle times out, wait a fixed longer time for heavy pages
-                console.log('Network idle timeout, using fixed wait for heavy page');
+                
                 await page.waitForTimeout(6000); // 6 seconds for heavy pages
             }
             
@@ -144,5 +159,9 @@ export async function POST(request: NextRequest) {
             error: `Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
             success: false
         }, { status: 500 });
+    } finally {
+        // Always decrement the counter when request completes
+        activeAuditRequests--;
+
     }
 }

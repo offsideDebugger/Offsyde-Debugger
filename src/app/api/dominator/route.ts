@@ -5,7 +5,7 @@ import axios from "axios";
 
 // Queue system to handle concurrent requests properly
 let activeRequests = 0;
-const MAX_CONCURRENT_REQUESTS = 3;
+const MAX_CONCURRENT_REQUESTS = 8; // Much higher for real-world performance
 const requestQueue: Array<() => Promise<void>> = [];
 
 // Process queued requests
@@ -21,8 +21,8 @@ async function processQueue() {
             await nextRequest();
         } finally {
             activeRequests--;
-            // Process next item in queue
-            setTimeout(processQueue, 100);
+            // Process next item in queue immediately
+            setTimeout(processQueue, 10);
         }
     }
 }
@@ -31,6 +31,14 @@ export async function POST(request: Request) {
     const { url } = await request.json();
     if (!url) {
         return new Response(JSON.stringify({ error: "URL is required" }), { status: 400 });
+    }
+
+    // Check if queue is getting too long (prevent memory issues)
+    if (requestQueue.length >= 50) { // Much higher limit for speed
+        return new Response(JSON.stringify({ 
+            error: "Server is too busy. Please try again in a few seconds.",
+            retryAfter: 1500 // Much faster retry
+        }), { status: 429 });
     }
 
     // Return a promise that will be resolved when the request is processed

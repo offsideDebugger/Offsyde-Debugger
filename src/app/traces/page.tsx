@@ -120,7 +120,7 @@ export default function Playmaker(){
                 <div className="mx-auto max-w-7xl">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-400">Playmaker</h1>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-400">Traces</h1>
                         <p className="mt-1 text-sm text-neutral-400">Quick endpoint checks: status, TTFB, redirects, headers, and load behavior.</p>
                     </div>
 

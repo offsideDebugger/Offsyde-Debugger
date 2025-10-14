@@ -26,23 +26,72 @@ export default function Forensics() {
             try {
                 const results: PageSpeedData[] = [];
                 
-                // auditing all routes
-                for (const route of selectedRoutes) {
-                    const response = await fetch(`/api/audits`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ url: route.trim() }),
-                    });         
-    
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                // Process routes in larger batches for speed
+                const BATCH_SIZE = 5;
+                
+                for (let i = 0; i < selectedRoutes.length; i += BATCH_SIZE) {
+                    const batch = selectedRoutes.slice(i, i + BATCH_SIZE);
+                    
+                    // Process batch in parallel
+                    const batchPromises = batch.map(async (route) => {
+                        let retries = 2; // Reduced retries for speed
+                        let result;
+                        
+                        while (retries > 0) {
+                            try {
+                                const response = await fetch(`/api/audits`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ url: route.trim() }),
+                                });         
+                
+                                if (response.status === 429) {
+                                    // Rate limited, wait and retry
+                                    const errorData = await response.json();
+                                    const waitTime = errorData.retryAfter || 1000; // Even faster retry
+                                    console.log(`Rate limited, waiting ${waitTime}ms before retry...`);
+                                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                                    retries--;
+                                    continue;
+                                }
+                                
+                                if (!response.ok) {
+                                    const errorText = await response.text();
+                                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                                }
+                
+                                result = await response.json();
+                                break; // Success, exit retry loop
+                                
+                            } catch (error) {
+                                retries--;
+                                if (retries === 0) {
+                                    // Final attempt failed
+                                    result = { 
+                                        error: `Failed after retries: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+                                        data: undefined, 
+                                        success: false 
+                                    };
+                                } else {
+                                    // Very short wait before retry
+                                    await new Promise(resolve => setTimeout(resolve, 200));
+                                }
+                            }
+                        }
+                        
+                        return result;
+                    });
+                    
+                    // Wait for batch to complete
+                    const batchResults = await Promise.all(batchPromises);
+                    results.push(...batchResults);
+                    
+                    // Minimal delay between batches
+                    if (i + BATCH_SIZE < selectedRoutes.length) {
+                        await new Promise(resolve => setTimeout(resolve, 50));
                     }
-    
-                    const result = await response.json();
-                    results.push(result);
                 }
                 
             
@@ -68,6 +117,12 @@ export default function Forensics() {
                 },
                 body: JSON.stringify({ url: route.trim() }),
             });
+
+            if (response.status === 429) {
+                const errorData = await response.json();
+                const waitTime = errorData.retryAfter || 3000;
+                throw new Error(`Server is busy. Please try again in ${Math.ceil(waitTime/1000)} seconds.`);
+            }
 
             if (!response.ok) {
                 const errorText = await response.text();
