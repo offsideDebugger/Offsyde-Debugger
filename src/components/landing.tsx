@@ -52,12 +52,12 @@ export default function Landing(): React.ReactElement {
   {/* Hero: responsive height - full viewport on mobile (no navbar), minus navbar on desktop */}
   <section className="flex items-center justify-center px-4 min-h-screen sm:px-0 md:min-h-[calc(100vh-72px)]">
         <Container>
-          <div className="grid items-center gap-8 mx-auto py-8 w-full max-w-6xl md:py-0 lg:grid-cols-2">
-            <div className="text-center space-y-6 lg:text-left">
+          <div className="grid items-center gap-8 mx-auto py-8 w-full  max-w-6xl md:py-0 lg:grid-cols-2">
+            <div className="text-center space-y-6 lg:text-left ">
               <h1 className="text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
                 Debug. Audit. Report.
                 <br />
-                <span className="text-neutral-400 font-medium text-xl sm:text-2xl md:text-3xl lg:text-4xl">Deep site tests, frontend to backend</span>
+                <span className="text-neutral-400 font-medium text-xl sm:text-2xl md:text-3xl lg:text-3xl">Deep site tests, frontend to backend</span>
               </h1>
 
               <p className="mx-auto max-w-2xl text-base text-neutral-400 sm:text-lg lg:mx-0">
@@ -72,7 +72,7 @@ export default function Landing(): React.ReactElement {
               </div>
             </div>
 
-            <div className="mt-8 p-4 bg-gradient-to-br from-white/3 to-white/2 rounded-xl border-white/6 backdrop-blur-sm border sm:p-6 lg:mt-0">
+            <div className="mt-8 p-4 bg-gradient-to-br from-white/3 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.08),_transparent_65%)] to-white/2 rounded-xl border-white/6 backdrop-blur-sm border sm:p-6 lg:mt-0">
               <div className="text-xs font-mono text-neutral-300">Quick flow</div>
               <ol className="mt-4 space-y-3">
                 <li className="flex items-start gap-3">
