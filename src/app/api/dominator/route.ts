@@ -5,7 +5,7 @@ import axios from "axios";
 
 // Queue system to handle concurrent requests properly
 let activeRequests = 0;
-const MAX_CONCURRENT_REQUESTS = 8; // Much higher for real-world performance
+const MAX_CONCURRENT_REQUESTS = 8; 
 const requestQueue: Array<() => Promise<void>> = [];
 
 // Process queued requests

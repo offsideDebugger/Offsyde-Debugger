@@ -1,200 +1,192 @@
-# Offsyde 🔍
+# Offsyde
 
-A comprehensive web auditing and debugging platform built with Next.js that helps developers analyze, optimize, and debug their web applications. Offsyde provides automated route discovery, performance audits, visual debugging, and backend tracing capabilities.
+**Automated web auditing platform that crawls your site, audits performance, detects broken assets, and traces backend issues -- all from a single URL.**
+
+Most web auditing tools do one thing. Offsyde chains five analysis passes together: discover every route on your site, run performance audits against each one, scan for broken images/videos/iframes, validate CSS and script loading, and trace backend response behavior. The results feed into a single scored report you can export as PDF.
+
+No database. No accounts. Paste a URL, get answers.
+
+---
 
 ## Features
 
-### 🕵️ Scoutings - Route Crawling
-Automatically crawl and discover all reachable routes from a starting URL using Playwright-powered web scraping. Get a complete map of your website's structure.
+### Scoutings -- Route Discovery
+Crawl any website with Playwright-powered headless Chromium. Automatically discovers all reachable routes from a starting URL, filtering out external links, social media, and hash fragments.
 
-### 🔍 Audits - Lighthouse-style Performance Testing
-Run comprehensive performance, accessibility, and SEO audits on selected routes. Get detailed metrics including:
-- Performance scores
-- First Contentful Paint (FCP)
-- Largest Contentful Paint (LCP)
-- Total Blocking Time (TBT)
-- Cumulative Layout Shift (CLS)
-- Speed Index
-- Accessibility and SEO scores
+### Audits -- Performance Analysis
+Run batch performance audits on discovered routes. Measures DOM Content Loaded, page load time, TTFB, DOM element count, and resource counts (images, scripts, stylesheets). Routes are graded Excellent / Good / Fair / Poor with concurrency-controlled parallel execution.
 
-### 🎯 Visuals - Frontend Debugging
-Detect and analyze frontend issues across your application:
-- **Links & Sheets**: Identify broken links, missing hrefs, and link issues
-- **Faulty CSS**: Find CSS errors and stylesheet problems
-- **Offside Tags**: Detect broken images, videos, audio elements, and iframes
+### Visuals -- Frontend Debugging
+Three-pass frontend analysis:
+- **Offside Tags** -- Broken images (12+ checks), videos, audio elements, and iframes (10+ checks) with detailed issue classification.
+- **Links & Sheets** -- Broken stylesheets, missing scripts, render-blocking resource detection.
+- **Faulty CSS** -- Stylesheet errors, oversized CSS files, excessive inline styles, CSS loading performance.
 
-### ⚡ Traces - Backend Debugging
-Analyze backend issues with network request monitoring:
-- Spot auth failures
-- Identify database query errors
-- Monitor HTTP status codes
-- Track response times
-- Analyze request/response headers
+### Traces -- Backend Debugging
+Analyze server-side behavior across routes: TTFB measurement, HTTP status codes, redirect chain tracking, header analysis (Cache-Control, CORS, Content-Type), empty JSON body detection. Each route is load-tested with averaged results and classified by severity.
 
-### 📊 Statsheets - Summary Reports
-Generate comprehensive, shareable reports consolidating:
-- Route discovery results
-- Performance audit summaries
-- Visual debugging findings
-- Backend trace analysis
-- Printable/exportable formats
+### Statsheets -- Summary Reports
+Aggregated scorecard across all four analysis modules. Calculates Performance, Media Health, Link Integrity, and CSS Health scores (graded A/B/C). Exportable as a print-optimized PDF.
+
+---
 
 ## Tech Stack
 
-- **Framework**: Next.js 15.5.2 with App Router
-- **Runtime**: React 19
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 4
-- **State Management**: Zustand
-- **Browser Automation**: Playwright Core
-- **Performance Auditing**: Lighthouse
-- **Web Scraping**: Cheerio, Axios
-- **Serverless Chrome**: @sparticuz/chromium
-- **Analytics**: Vercel Analytics
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript (strict mode) |
+| Runtime | React 19 |
+| Styling | Tailwind CSS 4 |
+| State | Zustand |
+| Browser Automation | Playwright Core + @sparticuz/chromium |
+| Scraping | Cheerio, Axios |
+| Analytics | Vercel Analytics |
+| Package Manager | Bun |
+| Deployment | Vercel (serverless) |
 
-## Getting Started
+---
 
-### Prerequisites
+## Architecture
 
-- Node.js 20 or higher
-- npm, yarn, pnpm, or bun
+Offsyde is a monolithic Next.js application. There is no separate backend service -- all server-side logic runs as Next.js API route handlers (serverless functions on Vercel).
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd offsyde
+```
+Client (React + Zustand)
+  │
+  ├── /scoutings ──→ POST /api/playwright-crawl
+  ├── /audits    ──→ POST /api/audits
+  ├── /visuals   ──→ POST /api/dominator
+  │                  POST /api/dominator/links
+  │                  POST /api/dominator/css
+  ├── /traces    ──→ POST /api/playmaker
+  └── /statsheets (client-side aggregation)
 ```
 
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
+**Key design decisions:**
+- Stateless server. No database, no user sessions. All analysis state lives in client-side Zustand stores.
+- Each API route spawns headless Chromium via `@sparticuz/chromium`, optimized for serverless cold starts.
+- Concurrency controls prevent resource exhaustion: max 5 concurrent audits, max 8 concurrent dominator analyses with a 50-request queue.
+- Rate limiting with HTTP 429 responses and `Retry-After` headers.
+- Mobile devices are blocked at the middleware level -- this is a desktop developer tool.
 
-3. Run the development server:
+---
+
+## Quick Start
+
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+# Clone and install
+git clone https://github.com/offsideDebugger/Offsyde-Debugger.git
+cd Offsyde-Debugger && bun install
+
+# Start development server
 bun dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+Open `http://localhost:3000`. Enter a URL and start auditing.
+
+### Local Playwright Setup
+
+If you're working on API routes that use browser automation:
+
+```bash
+bunx playwright install chromium
+```
 
 ### Available Scripts
 
-- `npm run dev` - Start the development server
-- `npm run build` - Build the production application
-- `npm run start` - Start the production server
-- `npm run lint` - Run ESLint for code quality
+| Command | Purpose |
+|---|---|
+| `bun dev` | Development server with hot reload |
+| `bun run build` | Production build (catches type errors) |
+| `bun start` | Serve production build |
+| `bun lint` | Run ESLint |
+
+---
 
 ## Project Structure
 
 ```
-offsyde/
-├── src/
-│   ├── app/
-│   │   ├── api/              # API routes for backend processing
-│   │   │   ├── audits/       # Lighthouse audits endpoint
-│   │   │   ├── dominator/    # Frontend debugging endpoints
-│   │   │   │   ├── css/      # CSS analysis
-│   │   │   │   └── links/    # Link checking
-│   │   │   ├── playmaker/    # Backend tracing endpoint
-│   │   │   └── playwright-crawl/ # Route crawling endpoint
-│   │   ├── scoutings/        # Route crawling page
-│   │   ├── audits/           # Performance audits page
-│   │   ├── visuals/          # Frontend debugging page
-│   │   ├── traces/           # Backend debugging page
-│   │   ├── statsheets/       # Report generation page
-│   │   └── state/            # Zustand state management
-│   ├── components/           # React components
-│   │   ├── home/             # Homepage components
-│   │   └── smalls/           # Reusable UI components
-│   └── utils/                # Utility functions
-├── public/                   # Static assets
-└── scripts/                  # Build and utility scripts
+src/
+├── app/
+│   ├── api/
+│   │   ├── playwright-crawl/   # Route discovery (Playwright)
+│   │   ├── audits/             # Performance auditing (Playwright)
+│   │   ├── dominator/          # Asset analysis (Playwright + Axios)
+│   │   │   ├── css/            # CSS validation
+│   │   │   └── links/          # Link/script checking
+│   │   └── playmaker/          # Backend tracing (fetch + perf_hooks)
+│   ├── scoutings/              # Route crawling UI
+│   ├── audits/                 # Performance audit UI
+│   ├── visuals/                # Frontend debugging UI
+│   ├── traces/                 # Backend debugging UI
+│   ├── statsheets/             # Report generation UI
+│   └── state/                  # Zustand stores (12 stores)
+├── components/
+│   ├── home/                   # Landing page components
+│   └── smalls/                 # Reusable UI components
+├── middleware.ts               # Mobile device blocking
+└── utils/
+    └── linkCrawler.ts          # Cheerio-based link extraction
 ```
 
-## Usage
+---
 
-### 1. Scouting Routes
-1. Navigate to the **Scoutings** page
-2. Enter your website's base URL
-3. Click "Crawl" to discover all routes
-4. Select routes you want to analyze
+## API Reference
 
-### 2. Running Audits
-1. Navigate to the **Audits** page
-2. Select routes from your scouting results
-3. Run batch audits or individual route audits
-4. View detailed performance metrics
+All endpoints accept `POST` requests with JSON bodies.
 
-### 3. Visual Debugging
-1. Navigate to the **Visuals** page
-2. Select routes to analyze
-3. Choose analysis type:
-   - Links & Sheets
-   - Faulty CSS
-   - Offside Tags
-4. Review detected issues
+| Endpoint | Input | Description |
+|---|---|---|
+| `/api/playwright-crawl` | `{ url: string }` | Crawl a site and return discovered routes |
+| `/api/audits` | `{ url: string }` | Performance audit for a single URL |
+| `/api/dominator` | `{ url: string }` | Detect broken images, videos, audio, iframes |
+| `/api/dominator/links` | `{ url: string }` | Check stylesheets and scripts |
+| `/api/dominator/css` | `{ url: string }` | Analyze CSS errors and performance |
+| `/api/playmaker` | `{ routes: string[] }` | Trace backend behavior across routes |
 
-### 4. Backend Tracing
-1. Navigate to the **Traces** page
-2. Select routes for analysis
-3. Run backend trace analysis
-4. Review network requests, status codes, and errors
+All responses follow the shape `{ success: boolean, data: ..., error?: string }`.
 
-### 5. Generating Reports
-1. Navigate to the **Statsheets** page
-2. View consolidated results from all analyses
-3. Export or print comprehensive reports
+---
 
-## API Endpoints
+## Environment Variables
 
-- `POST /api/playwright-crawl` - Crawl website and discover routes
-- `POST /api/audits` - Run Lighthouse audits on a URL
-- `POST /api/dominator` - Analyze frontend elements (images, videos, iframes)
-- `POST /api/dominator/links` - Check for broken links and link issues
-- `POST /api/dominator/css` - Analyze CSS errors and stylesheet issues
-- `POST /api/playmaker` - Trace backend requests and analyze server responses
+No environment variables are required for local development. The application is fully self-contained.
+
+For production (Vercel), the deployment is zero-config -- Vercel auto-detects Next.js and provisions the serverless environment, including the Chromium binary via `@sparticuz/chromium`.
+
+---
 
 ## Deployment
 
-### Deploy on Vercel
+Offsyde is designed for [Vercel](https://vercel.com):
 
-The easiest way to deploy Offsyde is using the [Vercel Platform](https://vercel.com/new):
+1. Fork the repository.
+2. Import the project into Vercel.
+3. Deploy. No build configuration or environment variables required.
 
-1. Push your code to a Git repository
-2. Import the project to Vercel
-3. Vercel will automatically detect Next.js and configure the build
-4. Deploy!
+The serverless functions use `@sparticuz/chromium` which bundles a Chromium binary compatible with AWS Lambda / Vercel's runtime. Concurrency limits in the API routes are tuned for serverless execution.
 
-For more information, see the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying).
-
-## Environment Considerations
-
-- The application uses Playwright with Chromium for browser automation
-- Serverless functions have concurrency limits to manage resource usage
-- Chromium binary is optimized for serverless environments using @sparticuz/chromium
+---
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions. Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** before submitting a pull request. It covers:
+
+- Local setup and development workflow
+- Branch naming and commit message conventions
+- Pull request checklist and review process
+- Coding standards for TypeScript, React, and API routes
+- How to propose major changes
+
+---
+
+## Code of Conduct
+
+This project follows a **[Code of Conduct](./CODE_OF_CONDUCT.md)**. By participating, you agree to uphold a professional, harassment-free environment for everyone.
+
+---
 
 ## License
 
-This project is private and proprietary.
-
-## Support
-
-For issues, questions, or feature requests, please open an issue in the repository.
+This project is private and proprietary. See the repository for license terms.
